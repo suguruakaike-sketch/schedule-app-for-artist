@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>スケジュール管理</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0984e3">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="スケジュール">
+  <link rel="apple-touch-icon" href="icon-192.png">
   <script src="https://accounts.google.com/gsi/client" async></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -5455,6 +5460,10 @@ initScrollSync();
 initResize();
 jumpToday();
 window.addEventListener('resize', render);
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/schedule-app-for-artist/sw.js');
+}
 </script>
 </body>
 </html>
