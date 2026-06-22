@@ -1289,6 +1289,7 @@
   <button class="contacts-btn" onclick="openArtwork()">🎨 在庫</button>
   <button class="contacts-btn" onclick="openSales()">💰 売り上げ</button>
   <button class="contacts-btn" onclick="openContacts()">👤 連絡先</button>
+  <button class="contacts-btn" id="baseImportBtn" onclick="openBaseOrderPanel()" style="display:none">🛍 Base取り込み</button>
   <button class="add-btn" onclick="openModal('new-parent', null, null)">＋ 案件を追加</button>
 </header>
 
@@ -1580,6 +1581,24 @@
             <button class="btn-save-key" id="saveOpenAIKeyBtnBasic" onclick="saveOpenAIKeyBasic()">保存</button>
           </div>
           <div class="api-key-hint">どちらか一方を設定すればAI機能が使えます。両方ある場合はAnthropicを優先します。</div>
+        </div>
+
+        <!-- Base API 連携 -->
+        <div class="api-key-section" id="baseApiSection">
+          <label>Base連携 <span style="font-weight:400;font-size:11px;color:#888">（注文を自動取り込み）</span></label>
+          <div class="api-key-row" style="margin-top:6px">
+            <input type="text" id="fBaseClientId" placeholder="Client ID" style="flex:1" />
+          </div>
+          <div class="api-key-row" style="margin-top:4px">
+            <input type="password" id="fBaseClientSecret" placeholder="Client Secret" style="flex:1" />
+            <button class="btn-save-key" id="saveBaseKeyBtn" onclick="saveBaseCredentials()">保存</button>
+          </div>
+          <div style="margin-top:8px" id="baseConnectArea">
+            <button class="ep-btn primary ep-btn-sm" id="baseAuthBtn" onclick="startBaseOAuth()" style="display:none">Baseと連携する</button>
+            <span id="baseConnectedLabel" style="display:none;font-size:12px;color:#00b894">✓ 連携済み</span>
+            <button class="ep-btn ep-btn-sm" id="baseDisconnectBtn" onclick="disconnectBase()" style="display:none;margin-left:8px">解除</button>
+          </div>
+          <div class="api-key-hint">Base管理画面のDevelopersからClient IDとClient Secretを取得してください。</div>
         </div>
       </div>
 
@@ -4438,6 +4457,315 @@ function _initGmailClient() {
   // GIS loaded async via <script src="https://accounts.google.com/gsi/client">
 }
 
+// ================================================================
+// Base API 連携
+// ================================================================
+const BASE_REDIRECT_URI = 'https://suguruakaike-sketch.github.io/schedule-app-for-artist';
+const BASE_SCOPE = 'read_items read_orders';
+
+function saveBaseCredentials() {
+  const clientId     = document.getElementById('fBaseClientId')?.value.trim();
+  const clientSecret = document.getElementById('fBaseClientSecret')?.value.trim();
+  if (!clientId || !clientSecret) { alert('Client IDとClient Secretの両方を入力してください'); return; }
+  localStorage.setItem('baseClientId', clientId);
+  localStorage.setItem('baseClientSecret', clientSecret);
+  _saveKeyToBtn('saveBaseKeyBtn');
+  _updateBaseUI();
+}
+
+function _updateBaseUI() {
+  const clientId = localStorage.getItem('baseClientId') || '';
+  const token    = localStorage.getItem('baseAccessToken') || '';
+  const authBtn       = document.getElementById('baseAuthBtn');
+  const connLabel     = document.getElementById('baseConnectedLabel');
+  const disconnectBtn = document.getElementById('baseDisconnectBtn');
+  const importBtn = document.getElementById('baseImportBtn');
+  if (!authBtn) return;
+  if (token) {
+    authBtn.style.display       = 'none';
+    connLabel.style.display     = '';
+    disconnectBtn.style.display = '';
+    if (importBtn) importBtn.style.display = '';
+  } else if (clientId) {
+    authBtn.style.display       = '';
+    connLabel.style.display     = 'none';
+    disconnectBtn.style.display = 'none';
+  } else {
+    authBtn.style.display       = 'none';
+    connLabel.style.display     = 'none';
+    disconnectBtn.style.display = 'none';
+    if (importBtn) importBtn.style.display = 'none';
+  }
+  const el1 = document.getElementById('fBaseClientId');
+  const el2 = document.getElementById('fBaseClientSecret');
+  if (el1) el1.value = localStorage.getItem('baseClientId') || '';
+  if (el2) el2.value = localStorage.getItem('baseClientSecret') || '';
+}
+
+function startBaseOAuth() {
+  const clientId = localStorage.getItem('baseClientId') || '';
+  if (!clientId) { alert('Client IDを保存してください'); return; }
+  const state = Math.random().toString(36).slice(2);
+  localStorage.setItem('baseOAuthState', state);
+  const url = `https://api.thebase.in/1/oauth/authorize?response_type=code&client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(BASE_REDIRECT_URI)}&scope=${BASE_SCOPE}&state=${state}`;
+  location.href = url;
+}
+
+async function _handleBaseOAuthCallback() {
+  const params = new URLSearchParams(location.search);
+  const code  = params.get('code');
+  const state = params.get('state');
+  if (!code) return;
+  const savedState = localStorage.getItem('baseOAuthState');
+  if (state !== savedState) { alert('OAuth stateが一致しません'); return; }
+  localStorage.removeItem('baseOAuthState');
+  const clientId     = localStorage.getItem('baseClientId') || '';
+  const clientSecret = localStorage.getItem('baseClientSecret') || '';
+  try {
+    const res = await fetch('https://api.thebase.in/1/oauth/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type:    'authorization_code',
+        client_id:     clientId,
+        client_secret: clientSecret,
+        code:          code,
+        redirect_uri:  BASE_REDIRECT_URI
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error_description || `HTTP ${res.status}`);
+    localStorage.setItem('baseAccessToken',  data.access_token);
+    localStorage.setItem('baseRefreshToken', data.refresh_token || '');
+    history.replaceState({}, '', BASE_REDIRECT_URI);
+    _updateBaseUI();
+    alert('Baseとの連携が完了しました！');
+  } catch(e) {
+    alert('Base認証エラー: ' + e.message);
+  }
+}
+
+function disconnectBase() {
+  localStorage.removeItem('baseAccessToken');
+  localStorage.removeItem('baseRefreshToken');
+  _updateBaseUI();
+}
+
+async function _baseApi(endpoint) {
+  let token = localStorage.getItem('baseAccessToken') || '';
+  const res = await fetch(`https://api.thebase.in/1/${endpoint}`, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  if (res.status === 401) {
+    await _refreshBaseToken();
+    token = localStorage.getItem('baseAccessToken') || '';
+    return fetch(`https://api.thebase.in/1/${endpoint}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    }).then(r => r.json());
+  }
+  return res.json();
+}
+
+async function _refreshBaseToken() {
+  const clientId     = localStorage.getItem('baseClientId') || '';
+  const clientSecret = localStorage.getItem('baseClientSecret') || '';
+  const refreshToken = localStorage.getItem('baseRefreshToken') || '';
+  if (!refreshToken) { disconnectBase(); return; }
+  const res = await fetch('https://api.thebase.in/1/oauth/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      grant_type:    'refresh_token',
+      client_id:     clientId,
+      client_secret: clientSecret,
+      refresh_token: refreshToken
+    })
+  });
+  const data = await res.json();
+  if (res.ok) {
+    localStorage.setItem('baseAccessToken',  data.access_token);
+    localStorage.setItem('baseRefreshToken', data.refresh_token || refreshToken);
+  }
+}
+
+// ─── Base注文一覧パネル ───
+function openBaseOrderPanel() {
+  const token = localStorage.getItem('baseAccessToken');
+  if (!token) { alert('先にBaseと連携してください（大項目の基本情報タブ）'); return; }
+  _showBaseOrderPanel();
+}
+
+async function _showBaseOrderPanel() {
+  // overlayを流用せず、専用パネルを作成
+  let panel = document.getElementById('baseOrderPanel');
+  if (!panel) {
+    panel = document.createElement('div');
+    panel.id = 'baseOrderPanel';
+    panel.style.cssText = 'position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center';
+    panel.innerHTML = `
+      <div style="background:white;border-radius:12px;width:min(680px,96vw);max-height:88vh;display:flex;flex-direction:column;overflow:hidden">
+        <div style="padding:14px 20px 0;border-bottom:1px solid #e8ecf0">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <div style="font-size:16px;font-weight:700">取り込み</div>
+            <button onclick="document.getElementById('baseOrderPanel').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#636e72">×</button>
+          </div>
+          <div style="display:flex;gap:0">
+            <button id="bopTabBase" onclick="_bopSwitchTab('base')" style="padding:7px 18px;border:none;border-bottom:2px solid #0984e3;background:none;font-size:13px;font-weight:600;color:#0984e3;cursor:pointer">Base注文</button>
+            <button id="bopTabArt" onclick="_bopSwitchTab('art')" style="padding:7px 18px;border:none;border-bottom:2px solid transparent;background:none;font-size:13px;color:#636e72;cursor:pointer">作品在庫</button>
+          </div>
+        </div>
+        <div id="baseOrderList" style="flex:1;overflow-y:auto;padding:16px">
+          <div style="text-align:center;padding:32px;color:#95a5a6">読み込み中...</div>
+        </div>
+      </div>`;
+    document.body.appendChild(panel);
+  }
+  panel.style.display = 'flex';
+  _showBaseOrderList();
+}
+
+function _importBaseOrder(order) {
+  const artworkTitle = (order.details || [])[0]?.item_title || '';
+  const price        = (order.details || [])[0]?.price || '';
+  const newProj = {
+    id:       Date.now() + Math.random(),
+    name:     artworkTitle || `Base注文_${order.unique_key || ''}`,
+    color:    PALETTE[projects.length % PALETTE.length],
+    projType: 'purchase',
+    notes:    '',
+    archived: false,
+    children: [],
+    emailThreads: [],
+    emailHistory: [],
+    clients: [{
+      id:          Date.now(),
+      name:        order.customer_name || '',
+      contact:     order.customer_mail || '',
+      email:       order.customer_mail || '',
+      address:     `${order.customer_prefecture||''}${order.customer_address||''}`,
+      artworkName: artworkTitle,
+      artworkPrice: String(price),
+      orderDate:   order.ordered_time?.slice(0,10) || '',
+      orderType:   'existing',
+      baseOrderId: order.unique_key || ''
+    }]
+  };
+  projects.unshift(newProj);
+  save();
+  render();
+  document.getElementById('baseOrderPanel')?.remove();
+  alert(`「${newProj.name}」を案件として取り込みました`);
+}
+
+function _bopSwitchTab(tab) {
+  const tabBase = document.getElementById('bopTabBase');
+  const tabArt  = document.getElementById('bopTabArt');
+  if (!tabBase || !tabArt) return;
+  if (tab === 'base') {
+    tabBase.style.borderBottomColor = '#0984e3'; tabBase.style.color = '#0984e3'; tabBase.style.fontWeight = '600';
+    tabArt.style.borderBottomColor  = 'transparent'; tabArt.style.color = '#636e72'; tabArt.style.fontWeight = 'normal';
+    _showBaseOrderList();
+  } else {
+    tabArt.style.borderBottomColor  = '#0984e3'; tabArt.style.color = '#0984e3'; tabArt.style.fontWeight = '600';
+    tabBase.style.borderBottomColor = 'transparent'; tabBase.style.color = '#636e72'; tabBase.style.fontWeight = 'normal';
+    _showArtworkInventoryList();
+  }
+}
+
+async function _showBaseOrderList() {
+  const listEl = document.getElementById('baseOrderList');
+  if (!listEl) return;
+  listEl.innerHTML = '<div style="text-align:center;padding:32px;color:#95a5a6">読み込み中...</div>';
+  try {
+    const data = await _baseApi('orders?limit=20&order=desc');
+    const orders = data.orders || [];
+    if (!orders.length) { listEl.innerHTML = '<div style="text-align:center;padding:32px;color:#95a5a6">注文がありません</div>'; return; }
+    listEl.innerHTML = orders.map(o => `
+      <div style="border:1px solid #e8ecf0;border-radius:8px;padding:12px 14px;margin-bottom:10px">
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:600;color:#2d3436">${_escHtml(o.customer_name || '名前なし')}</div>
+            <div style="font-size:11px;color:#636e72;margin-top:2px">${_escHtml(o.customer_mail || '')} ／ ${_escHtml(o.ordered_time?.slice(0,10) || '')}</div>
+            <div style="font-size:11px;color:#2d3436;margin-top:4px">
+              ${(o.details || []).map(d => `${_escHtml(d.item_title||'')} × ${d.amount}`).join('、')}
+            </div>
+            <div style="font-size:12px;font-weight:600;color:#0984e3;margin-top:4px">¥${Number(o.total_price||0).toLocaleString()}</div>
+          </div>
+          <button class="ep-btn primary ep-btn-sm" onclick="_importBaseOrder(${JSON.stringify(o).replace(/"/g,'&quot;')})">取り込む</button>
+        </div>
+      </div>`).join('');
+  } catch(e) {
+    listEl.innerHTML = `<div style="text-align:center;padding:32px;color:#e17055">読み込みエラー: ${_escHtml(e.message)}</div>`;
+  }
+}
+
+function _showArtworkInventoryList() {
+  _loadArtworks();
+  const listEl = document.getElementById('baseOrderList');
+  if (!listEl) return;
+  const STATUS_LABEL = { available: '販売中', reserved: '予約中', sold: '売約済', semi: 'セミオーダー' };
+  const STATUS_COLOR = { available: '#00b894', reserved: '#fdcb6e', sold: '#b2bec3', semi: '#a29bfe' };
+  if (!artworks.length) {
+    listEl.innerHTML = '<div style="text-align:center;padding:32px;color:#95a5a6">作品在庫がありません</div>';
+    return;
+  }
+  listEl.innerHTML = artworks.map(a => {
+    const statusLabel = STATUS_LABEL[a.soldStatus] || a.soldStatus || '';
+    const statusColor = STATUS_COLOR[a.soldStatus] || '#95a5a6';
+    const thumb = a.photo ? `<img src="${a.photo}" style="width:52px;height:52px;object-fit:cover;border-radius:6px;flex-shrink:0">` : `<div style="width:52px;height:52px;border-radius:6px;background:#f0f2f5;display:flex;align-items:center;justify-content:center;color:#b2bec3;font-size:20px;flex-shrink:0">🖼</div>`;
+    return `
+      <div style="border:1px solid #e8ecf0;border-radius:8px;padding:12px 14px;margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:12px">
+          ${thumb}
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">
+              <span style="font-size:13px;font-weight:600;color:#2d3436">${_escHtml(a.name)}</span>
+              <span style="font-size:10px;padding:1px 7px;border-radius:10px;background:${statusColor}22;color:${statusColor};font-weight:600">${statusLabel}</span>
+            </div>
+            <div style="font-size:11px;color:#636e72">${_escHtml(a.size || '')}${a.medium ? ' ／ ' + _escHtml(a.medium) : ''}</div>
+            ${a.price ? `<div style="font-size:12px;font-weight:600;color:#0984e3;margin-top:2px">¥${Number(a.price).toLocaleString()}</div>` : ''}
+          </div>
+          <button class="ep-btn primary ep-btn-sm" onclick="_importArtworkAsCase('${a.id}')">案件化</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function _importArtworkAsCase(artworkId) {
+  _loadArtworks();
+  const a = artworks.find(x => x.id === artworkId);
+  if (!a) { alert('作品が見つかりません'); return; }
+  const newProj = {
+    id:       Date.now() + Math.random(),
+    name:     a.name,
+    color:    PALETTE[projects.length % PALETTE.length],
+    projType: 'purchase',
+    notes:    a.concept || '',
+    archived: false,
+    children: [],
+    emailThreads: [],
+    emailHistory: [],
+    clients: [{
+      id:           Date.now(),
+      name:         '',
+      contact:      '',
+      email:        '',
+      address:      '',
+      artworkName:  a.name,
+      artworkSize:  a.size || '',
+      artworkPrice: a.price || '',
+      orderDate:    '',
+      orderType:    'existing',
+      artworkInventoryId: a.id
+    }]
+  };
+  projects.unshift(newProj);
+  save();
+  render();
+  document.getElementById('baseOrderPanel')?.remove();
+  alert(`「${a.name}」を案件として取り込みました`);
+}
+
 // ─── Email panel hover-collapse (document-level, added once) ───
 document.addEventListener('mousemove', (e) => {
   const overlay = document.getElementById('emailOverlay');
@@ -4644,9 +4972,18 @@ function deleteArtwork(id) {
 
 function openArtworkImport() {
   const body = document.getElementById('artworkBody');
+  const hasToken = !!localStorage.getItem('baseAccessToken');
   body.innerHTML = `
     <div class="csv-import-area">
       <button class="artwork-form-back" onclick="renderArtworkList()">← 戻る</button>
+      <div style="margin-bottom:16px">
+        <button class="ep-btn primary" style="width:100%;padding:12px;font-size:14px" onclick="_loadBaseItemsForImport()">
+          🛍 Base APIから商品を取り込む
+        </button>
+      </div>
+      <div id="baseItemImportArea"></div>
+      <div style="margin:16px 0;border-top:1px solid #e8ecf0;padding-top:16px">
+        <div style="font-size:12px;color:#95a5a6;margin-bottom:8px">または CSVファイルから取り込む</div>
       <div style="font-size:13px;color:#636e72;line-height:1.7">
         Baseの管理画面から「商品」→「CSVエクスポート」でダウンロードしたCSVファイルをここに読み込めます。<br>
         <small>対応列: 商品名, 説明, 価格, 商品画像1</small>
@@ -4661,7 +4998,88 @@ function openArtworkImport() {
       </div>
       <input type="file" id="csvFileInput" accept=".csv" style="display:none" onchange="handleCsvFile(event)">
       <div id="csvPreview"></div>
+      </div>
     </div>`;
+}
+
+async function _loadBaseItemsForImport() {
+  const area = document.getElementById('baseItemImportArea');
+  if (!area) return;
+  if (!localStorage.getItem('baseAccessToken')) {
+    area.innerHTML = `<div style="background:#fff8e1;border:1px solid #fdcb6e;border-radius:8px;padding:12px 14px;font-size:13px;color:#636e72">
+      Base APIと未連携です。設定画面でClient IDとClient Secretを保存し「Baseと連携する」を押してください。
+    </div>`;
+    return;
+  }
+  area.innerHTML = '<div style="text-align:center;padding:20px;color:#95a5a6">読み込み中...</div>';
+  try {
+    const data = await _baseApi('items?limit=100&order=list_order');
+    const items = data.items || [];
+    if (!items.length) { area.innerHTML = '<div style="text-align:center;padding:16px;color:#95a5a6">商品がありません</div>'; return; }
+    const existingNames = new Set(artworks.map(a => a.name));
+    area.innerHTML = `
+      <div style="margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:12px;color:#636e72">${items.length}件の商品</span>
+        <button class="ep-btn primary ep-btn-sm" onclick="_bulkImportBaseItems()">すべて取り込む</button>
+      </div>
+      <div id="baseItemList">
+        ${items.map(it => {
+          const alreadyIn = existingNames.has(it.title || '');
+          const thumb = (it.images?.[0]?.original) ? `<img src="${_escHtml(it.images[0].original)}" style="width:44px;height:44px;object-fit:cover;border-radius:5px;flex-shrink:0">` : `<div style="width:44px;height:44px;border-radius:5px;background:#f0f2f5;display:flex;align-items:center;justify-content:center;color:#b2bec3;font-size:18px;flex-shrink:0">🖼</div>`;
+          return `
+            <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f0f2f5" data-item-id="${_escHtml(String(it.item_identifier||it.item_no||''))}">
+              ${thumb}
+              <div style="flex:1;min-width:0">
+                <div style="font-size:13px;font-weight:600;color:#2d3436;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${_escHtml(it.title||'')}</div>
+                <div style="font-size:11px;color:#636e72">¥${Number(it.price||0).toLocaleString()} ${it.stock !== undefined ? `/ 在庫:${it.stock}` : ''}</div>
+              </div>
+              ${alreadyIn
+                ? `<span style="font-size:11px;color:#95a5a6;flex-shrink:0">取込済</span>`
+                : `<button class="ep-btn primary ep-btn-sm" onclick="_importBaseItemAsArtwork(${JSON.stringify(it).replace(/"/g,'&quot;')})">取り込む</button>`}
+            </div>`;
+        }).join('')}
+      </div>`;
+    window._baseItemsCache = items;
+  } catch(e) {
+    area.innerHTML = `<div style="text-align:center;padding:16px;color:#e17055">エラー: ${_escHtml(e.message)}</div>`;
+  }
+}
+
+function _importBaseItemAsArtwork(item) {
+  const name  = item.title || '';
+  const price = String(item.price || '');
+  const notes = (item.detail || '').replace(/<[^>]*>/g, '').trim();
+  const photo = item.images?.[0]?.original || null;
+  const newArt = {
+    id: uid(), name, size: '', medium: '', concept: notes, createdAt: '', price,
+    semiOrderCount: 0, soldStatus: 'available', soldDate: '', notes: '',
+    photo: photo
+  };
+  artworks.push(newArt);
+  _saveArtworks();
+  const btn = event.target;
+  if (btn) { btn.textContent = '取込済'; btn.disabled = true; btn.style.opacity = '0.5'; }
+}
+
+function _bulkImportBaseItems() {
+  const items = window._baseItemsCache || [];
+  if (!items.length) return;
+  const existingNames = new Set(artworks.map(a => a.name));
+  let count = 0;
+  items.forEach(item => {
+    const name = item.title || '';
+    if (!name || existingNames.has(name)) return;
+    const notes = (item.detail || '').replace(/<[^>]*>/g, '').trim();
+    artworks.push({
+      id: uid(), name, size: '', medium: '', concept: notes, createdAt: '',
+      price: String(item.price || ''), semiOrderCount: 0, soldStatus: 'available',
+      soldDate: '', notes: '', photo: item.images?.[0]?.original || null
+    });
+    count++;
+  });
+  _saveArtworks();
+  alert(`${count}件の商品を作品在庫に取り込みました`);
+  renderArtworkList();
 }
 
 function handleCsvDrop(e) {
@@ -5512,6 +5930,8 @@ initScrollSync();
 initResize();
 jumpToday();
 window.addEventListener('resize', render);
+_handleBaseOAuthCallback();
+_updateBaseUI();
 
 // モーダル内のテキスト入力でEnterキーを押してもモーダルが閉じないようにする
 document.addEventListener('keydown', e => {
