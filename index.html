@@ -5458,7 +5458,8 @@ document.addEventListener('keydown', e => {
     return;
   }
   if (e.key === 'Enter' && modalOpen) {
-    if (document.activeElement.tagName !== 'TEXTAREA') { saveModal(); return; }
+    const tag = document.activeElement.tagName;
+    if (tag !== 'TEXTAREA' && tag !== 'INPUT') { saveModal(); return; }
   }
   if (!modalOpen && !contactsOpen) {
     if (e.key === 'ArrowLeft')  nav(-1);
