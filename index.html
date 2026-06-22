@@ -4972,43 +4972,88 @@ function deleteArtwork(id) {
 
 function openArtworkImport() {
   const body = document.getElementById('artworkBody');
-  const hasToken = !!localStorage.getItem('baseAccessToken');
+  const hasToken    = !!localStorage.getItem('baseAccessToken');
+  const hasClientId = !!localStorage.getItem('baseClientId');
+  const savedId     = localStorage.getItem('baseClientId')     || '';
+  const savedSecret = localStorage.getItem('baseClientSecret') || '';
+
+  const baseSection = (hasToken && hasClientId)
+    ? `<div style="margin-bottom:4px">
+        <button class="ep-btn primary" style="width:100%;padding:12px;font-size:14px" onclick="_loadBaseItemsForImport()">
+          🛍 Base商品を読み込む
+        </button>
+       </div>
+       <div id="baseItemImportArea"></div>`
+    : `<div style="background:#f8f9fa;border:1px solid #e8ecf0;border-radius:10px;padding:16px;margin-bottom:4px">
+        <div style="font-size:13px;font-weight:700;color:#2d3436;margin-bottom:10px">Base API 連携設定</div>
+        <div style="font-size:11px;color:#636e72;margin-bottom:10px;line-height:1.6">
+          <a href="https://developers.thebase.in/" target="_blank" style="color:#0984e3">developers.thebase.in</a> でアプリを登録し、<br>Client IDとClient Secretを入力してください。<br>
+          <span style="font-size:10px">リダイレクトURI: <code style="background:#f0f2f5;padding:1px 4px;border-radius:3px">https://suguruakaike-sketch.github.io/schedule-app-for-artist</code></span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <input id="inlineBaseClientId" type="text" placeholder="Client ID" value="${_escHtml(savedId)}"
+            style="border:1px solid #dfe6e9;border-radius:6px;padding:8px 10px;font-size:13px;width:100%;box-sizing:border-box">
+          <input id="inlineBaseClientSecret" type="password" placeholder="Client Secret" value="${_escHtml(savedSecret)}"
+            style="border:1px solid #dfe6e9;border-radius:6px;padding:8px 10px;font-size:13px;width:100%;box-sizing:border-box">
+          <button class="ep-btn primary" style="padding:10px" onclick="_inlineSaveAndConnectBase()">保存してBaseと連携する →</button>
+        </div>
+       </div>
+       <div id="baseItemImportArea"></div>`;
+
   body.innerHTML = `
     <div class="csv-import-area">
       <button class="artwork-form-back" onclick="renderArtworkList()">← 戻る</button>
-      <div style="margin-bottom:16px">
-        <button class="ep-btn primary" style="width:100%;padding:12px;font-size:14px" onclick="_loadBaseItemsForImport()">
-          🛍 Base APIから商品を取り込む
-        </button>
-      </div>
-      <div id="baseItemImportArea"></div>
-      <div style="margin:16px 0;border-top:1px solid #e8ecf0;padding-top:16px">
+      ${baseSection}
+      <div style="margin:16px 0;border-top:1px solid #e8ecf0;padding-top:14px">
         <div style="font-size:12px;color:#95a5a6;margin-bottom:8px">または CSVファイルから取り込む</div>
-      <div style="font-size:13px;color:#636e72;line-height:1.7">
-        Baseの管理画面から「商品」→「CSVエクスポート」でダウンロードしたCSVファイルをここに読み込めます。<br>
-        <small>対応列: 商品名, 説明, 価格, 商品画像1</small>
-      </div>
-      <div class="csv-drop-zone" id="csvDropZone"
-           onclick="document.getElementById('csvFileInput').click()"
-           ondragover="event.preventDefault();this.classList.add('drag-over')"
-           ondragleave="this.classList.remove('drag-over')"
-           ondrop="handleCsvDrop(event)">
-        <div style="font-size:32px">📄</div>
-        <div class="csv-drop-label">CSVファイルをドラッグ＆ドロップ<br>またはクリックして選択</div>
-      </div>
-      <input type="file" id="csvFileInput" accept=".csv" style="display:none" onchange="handleCsvFile(event)">
-      <div id="csvPreview"></div>
+        <div style="font-size:12px;color:#636e72;line-height:1.7;margin-bottom:8px">
+          Baseの管理画面から「商品」→「CSVエクスポート」でダウンロードしたCSVを読み込めます。
+        </div>
+        <div class="csv-drop-zone" id="csvDropZone"
+             onclick="document.getElementById('csvFileInput').click()"
+             ondragover="event.preventDefault();this.classList.add('drag-over')"
+             ondragleave="this.classList.remove('drag-over')"
+             ondrop="handleCsvDrop(event)">
+          <div style="font-size:32px">📄</div>
+          <div class="csv-drop-label">CSVファイルをドラッグ＆ドロップ<br>またはクリックして選択</div>
+        </div>
+        <input type="file" id="csvFileInput" accept=".csv" style="display:none" onchange="handleCsvFile(event)">
+        <div id="csvPreview"></div>
       </div>
     </div>`;
+}
+
+function _inlineSaveAndConnectBase() {
+  const clientId     = (document.getElementById('inlineBaseClientId')?.value || '').trim();
+  const clientSecret = (document.getElementById('inlineBaseClientSecret')?.value || '').trim();
+  if (!clientId || !clientSecret) { alert('Client IDとClient Secretを両方入力してください'); return; }
+  localStorage.setItem('baseClientId', clientId);
+  localStorage.setItem('baseClientSecret', clientSecret);
+  _updateBaseUI();
+  startBaseOAuth();
 }
 
 async function _loadBaseItemsForImport() {
   const area = document.getElementById('baseItemImportArea');
   if (!area) return;
-  if (!localStorage.getItem('baseAccessToken')) {
-    area.innerHTML = `<div style="background:#fff8e1;border:1px solid #fdcb6e;border-radius:8px;padding:12px 14px;font-size:13px;color:#636e72">
-      Base APIと未連携です。設定画面でClient IDとClient Secretを保存し「Baseと連携する」を押してください。
-    </div>`;
+  if (!localStorage.getItem('baseAccessToken') || !localStorage.getItem('baseClientId')) {
+    const savedId     = localStorage.getItem('baseClientId')     || '';
+    const savedSecret = localStorage.getItem('baseClientSecret') || '';
+    area.innerHTML = `
+      <div style="background:#f8f9fa;border:1px solid #e8ecf0;border-radius:10px;padding:16px">
+        <div style="font-size:13px;font-weight:700;color:#2d3436;margin-bottom:12px">Base API 連携設定</div>
+        <div style="font-size:12px;color:#636e72;margin-bottom:10px">
+          <a href="https://developers.thebase.in/" target="_blank" style="color:#0984e3">developers.thebase.in</a> でアプリを登録してClient IDとClient Secretを取得してください。<br>
+          リダイレクトURIは <code style="font-size:11px;background:#f0f2f5;padding:1px 5px;border-radius:3px">https://suguruakaike-sketch.github.io/schedule-app-for-artist</code>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <input id="inlineBaseClientId" type="text" placeholder="Client ID" value="${_escHtml(savedId)}"
+            style="border:1px solid #dfe6e9;border-radius:6px;padding:8px 10px;font-size:13px;width:100%;box-sizing:border-box">
+          <input id="inlineBaseClientSecret" type="password" placeholder="Client Secret" value="${_escHtml(savedSecret)}"
+            style="border:1px solid #dfe6e9;border-radius:6px;padding:8px 10px;font-size:13px;width:100%;box-sizing:border-box">
+          <button class="ep-btn primary" style="padding:9px" onclick="_inlineSaveAndConnectBase()">保存してBaseと連携する →</button>
+        </div>
+      </div>`;
     return;
   }
   area.innerHTML = '<div style="text-align:center;padding:20px;color:#95a5a6">読み込み中...</div>';
