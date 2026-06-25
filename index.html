@@ -5528,8 +5528,8 @@ function _updateSalesTargetBar() {
   if (!wrap || !bar || !text) return;
   if (!monthlyTarget || salesTabActive === 'gender' || salesTabActive === 'age') {
     wrap.style.display = 'none';
-    if (labelEl) labelEl.style.display = '';
-    if (inputEl) inputEl.style.display = '';
+    if (labelEl) labelEl.style.display = 'none';
+    if (inputEl) inputEl.style.display = 'none';
     return;
   }
 
