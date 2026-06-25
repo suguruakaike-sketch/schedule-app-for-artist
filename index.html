@@ -5524,6 +5524,7 @@ function _updateSalesTargetBar() {
   const bar     = document.getElementById('salesTargetPctBar');
   const text    = document.getElementById('salesTargetPctText');
   const labelEl = document.getElementById('salesTargetLabel');
+  const inputEl = document.getElementById('salesTargetInput');
   if (!wrap || !bar || !text) return;
   if (!monthlyTarget) { wrap.style.display = 'none'; return; }
 
@@ -5539,7 +5540,8 @@ function _updateSalesTargetBar() {
     }, 0);
     target = monthlyTarget * 12;
     prefix = '今年';
-    if (labelEl) labelEl.textContent = '年目標';
+    if (labelEl) labelEl.style.display = 'none';
+    if (inputEl) inputEl.style.display = 'none';
   } else {
     const thisYM = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
     currentTotal = sales.reduce((s, e) => {
@@ -5548,7 +5550,8 @@ function _updateSalesTargetBar() {
     }, 0);
     target = monthlyTarget;
     prefix = '今月';
-    if (labelEl) labelEl.textContent = '月目標';
+    if (labelEl) { labelEl.style.display = ''; labelEl.textContent = '月目標'; }
+    if (inputEl) inputEl.style.display = '';
   }
 
   const pct  = Math.min(Math.round(currentTotal / target * 100), 999);
