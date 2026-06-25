@@ -5663,12 +5663,14 @@ function _renderSalesGrouped(body, sales, mode) {
   const monthlyTarget = mode === 'monthly' ? _mt : (mode === 'yearly' ? _mt * 12 : 0);
   keys.forEach((key, i) => {
     const g = groups[key];
-    const barW = maxTotal > 0 ? Math.round((g.total / maxTotal) * 100) : 0;
-    let targetBadge = '';
+    let barW, targetBadge = '';
     if (monthlyTarget && key !== '__none__') {
       const achPct = Math.round(g.total / monthlyTarget * 100);
+      barW = Math.min(achPct, 100);
       const cls = achPct >= 100 ? 'over' : 'under';
       targetBadge = `<span class="sg-target-badge ${cls}">目標${achPct}%</span>`;
+    } else {
+      barW = maxTotal > 0 ? Math.round((g.total / maxTotal) * 100) : 0;
     }
     const sect = document.createElement('div');
     sect.className = 'sales-group';
