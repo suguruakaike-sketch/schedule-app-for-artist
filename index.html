@@ -203,6 +203,13 @@
       border-color: #74b9ff; background: #edf5ff; color: #0984e3; font-weight: 600;
     }
     .artwork-type-opt:hover { border-color: #74b9ff; }
+    /* ─── Multi-artwork lines ─── */
+    .artwork-line { padding:10px;border:1.5px solid #dfe6e9;border-radius:8px;margin-bottom:8px;background:#fafbfc; }
+    .artwork-line:last-child { margin-bottom:0; }
+    .al-remove-btn { background:none;border:none;font-size:16px;color:#b2bec3;cursor:pointer;padding:0 4px;line-height:1;transition:color 0.15s; }
+    .al-remove-btn:hover { color:#e17055; }
+    .al-add-btn { width:100%;padding:8px;border:1.5px dashed #dfe6e9;border-radius:7px;background:none;font-size:12px;color:#74b9ff;cursor:pointer;margin-top:6px;transition:border-color 0.15s,color 0.15s; }
+    .al-add-btn:hover { border-color:#74b9ff;background:#edf5ff; }
     select.artwork-select {
       padding: 8px 10px; border: 1.5px solid #dfe6e9; border-radius: 7px;
       font-size: 14px; font-family: inherit; outline: none; background: white;
@@ -1416,11 +1423,6 @@
             <label>話したこと</label>
             <textarea id="fPurchConversation" placeholder="打ち合わせ内容・話した内容など" style="min-height:70px"></textarea>
           </div>
-          <div class="form-row">
-            <label>納期</label>
-            <input type="date" id="fPurchDelivery"
-                   style="padding:9px 12px;border:1.5px solid #dfe6e9;border-radius:7px;font-size:14px;font-family:inherit;outline:none;width:160px;" />
-          </div>
           <div class="artwork-section">
             <div class="artwork-section-title">依頼作品</div>
             <div class="form-row">
@@ -1432,48 +1434,9 @@
                 <label class="artwork-type-opt"><input type="radio" name="fPurchOrderType" value="full" onchange="updatePurchArtworkVis()"> フルオーダー</label>
               </div>
             </div>
-            <div class="form-row" id="fPurchArtworkNameRow" style="display:none">
-              <label>作品名</label>
-              <input type="text" id="fPurchArtworkName" placeholder="作品名" />
-            </div>
-            <div class="form-row">
-              <label>サイズ</label>
-              <select id="fPurchArtworkSize" class="artwork-select">
-                <option value="">未選択</option>
-                <optgroup label="F">
-                <option>F6号（410×318mm）</option><option>F8号（455×380mm）</option><option>F10号（530×455mm）</option>
-                <option>F12号（606×500mm）</option><option>F15号（652×530mm）</option><option>F20号（727×606mm）</option>
-                <option>F25号（803×652mm）</option><option>F30号（910×727mm）</option><option>F40号（1000×803mm）</option>
-                <option>F50号（1167×910mm）</option>
-                </optgroup>
-                <optgroup label="P">
-                <option>P6号（410×273mm）</option><option>P8号（455×333mm）</option><option>P10号（530×410mm）</option>
-                <option>P12号（606×455mm）</option><option>P15号（652×500mm）</option><option>P20号（727×530mm）</option>
-                <option>P25号（803×606mm）</option><option>P30号（910×652mm）</option><option>P40号（1000×727mm）</option>
-                <option>P50号（1167×803mm）</option>
-                </optgroup>
-                <optgroup label="M">
-                <option>M6号（410×242mm）</option><option>M8号（455×273mm）</option><option>M10号（530×333mm）</option>
-                <option>M12号（606×410mm）</option><option>M15号（652×455mm）</option><option>M20号（727×500mm）</option>
-                <option>M25号（803×530mm）</option><option>M30号（910×606mm）</option><option>M40号（1000×652mm）</option>
-                <option>M50号（1167×727mm）</option>
-                </optgroup>
-                <optgroup label="ワイド">
-                <option>W-O（360×140mm）</option><option>W-SM（454×158mm）</option>
-                <option>W-3（546×222mm）</option><option>W-4（666×242mm）</option>
-                </optgroup>
-                <optgroup label="円">
-                <option>円（直径150mm）</option><option>円（直径200mm）</option>
-                <option>円（直径250mm）</option><option>円（直径300mm）</option>
-                </optgroup>
-                <option>その他</option>
-              </select>
-            </div>
-            <div class="form-row">
-              <label>価格</label>
-              <input type="text" id="fPurchArtworkPrice" class="artwork-price" placeholder="例: 55,000" />
-            </div>
-            <div class="form-row">
+            <div id="purchArtworkLines" style="margin-bottom:4px"></div>
+            <button type="button" class="al-add-btn" onclick="_addArtworkLine('purchArtworkLines')">＋ 作品を追加</button>
+            <div class="form-row" style="margin-top:10px">
               <label>額縁</label>
               <div class="frame-opts">
                 <label class="frame-opt"><input type="radio" name="fPurchFrame" value=""> 未選択</label>
@@ -1691,48 +1654,9 @@
                 <label class="artwork-type-opt"><input type="radio" name="fOrderType" value="full" onchange="updateArtworkVis()"> フルオーダー</label>
               </div>
             </div>
-            <div class="form-row" id="fArtworkNameRow" style="display:none">
-              <label>作品名</label>
-              <input type="text" id="fArtworkName" placeholder="作品名" />
-            </div>
-            <div class="form-row">
-              <label>サイズ</label>
-              <select id="fArtworkSize" class="artwork-select">
-                <option value="">未選択</option>
-                <optgroup label="F">
-                <option>F6号（410×318mm）</option><option>F8号（455×380mm）</option><option>F10号（530×455mm）</option>
-                <option>F12号（606×500mm）</option><option>F15号（652×530mm）</option><option>F20号（727×606mm）</option>
-                <option>F25号（803×652mm）</option><option>F30号（910×727mm）</option><option>F40号（1000×803mm）</option>
-                <option>F50号（1167×910mm）</option>
-                </optgroup>
-                <optgroup label="P">
-                <option>P6号（410×273mm）</option><option>P8号（455×333mm）</option><option>P10号（530×410mm）</option>
-                <option>P12号（606×455mm）</option><option>P15号（652×500mm）</option><option>P20号（727×530mm）</option>
-                <option>P25号（803×606mm）</option><option>P30号（910×652mm）</option><option>P40号（1000×727mm）</option>
-                <option>P50号（1167×803mm）</option>
-                </optgroup>
-                <optgroup label="M">
-                <option>M6号（410×242mm）</option><option>M8号（455×273mm）</option><option>M10号（530×333mm）</option>
-                <option>M12号（606×410mm）</option><option>M15号（652×455mm）</option><option>M20号（727×500mm）</option>
-                <option>M25号（803×530mm）</option><option>M30号（910×606mm）</option><option>M40号（1000×652mm）</option>
-                <option>M50号（1167×727mm）</option>
-                </optgroup>
-                <optgroup label="ワイド">
-                <option>W-O（360×140mm）</option><option>W-SM（454×158mm）</option>
-                <option>W-3（546×222mm）</option><option>W-4（666×242mm）</option>
-                </optgroup>
-                <optgroup label="円">
-                <option>円（直径150mm）</option><option>円（直径200mm）</option>
-                <option>円（直径250mm）</option><option>円（直径300mm）</option>
-                </optgroup>
-                <option>その他</option>
-              </select>
-            </div>
-            <div class="form-row">
-              <label>価格</label>
-              <input type="text" id="fArtworkPrice" class="artwork-price" placeholder="例: 55,000" />
-            </div>
-            <div class="form-row">
+            <div id="artworkLines" style="margin-bottom:4px"></div>
+            <button type="button" class="al-add-btn" onclick="_addArtworkLine('artworkLines')">＋ 作品を追加</button>
+            <div class="form-row" style="margin-top:10px">
               <label>額縁</label>
               <div class="frame-opts">
                 <label class="frame-opt"><input type="radio" name="fFrame" value=""> 未選択</label>
@@ -1874,48 +1798,9 @@
                 <label class="artwork-type-opt"><input type="radio" name="fChOrderType" value="full" onchange="updateChArtworkVis()"> フルオーダー</label>
               </div>
             </div>
-            <div class="form-row" id="fChArtworkNameRow" style="display:none">
-              <label>作品名</label>
-              <input type="text" id="fChArtworkName" placeholder="作品名" />
-            </div>
-            <div class="form-row">
-              <label>サイズ</label>
-              <select id="fChArtworkSize" class="artwork-select">
-                <option value="">未選択</option>
-                <optgroup label="F">
-                <option>F6号（410×318mm）</option><option>F8号（455×380mm）</option><option>F10号（530×455mm）</option>
-                <option>F12号（606×500mm）</option><option>F15号（652×530mm）</option><option>F20号（727×606mm）</option>
-                <option>F25号（803×652mm）</option><option>F30号（910×727mm）</option><option>F40号（1000×803mm）</option>
-                <option>F50号（1167×910mm）</option>
-                </optgroup>
-                <optgroup label="P">
-                <option>P6号（410×273mm）</option><option>P8号（455×333mm）</option><option>P10号（530×410mm）</option>
-                <option>P12号（606×455mm）</option><option>P15号（652×500mm）</option><option>P20号（727×530mm）</option>
-                <option>P25号（803×606mm）</option><option>P30号（910×652mm）</option><option>P40号（1000×727mm）</option>
-                <option>P50号（1167×803mm）</option>
-                </optgroup>
-                <optgroup label="M">
-                <option>M6号（410×242mm）</option><option>M8号（455×273mm）</option><option>M10号（530×333mm）</option>
-                <option>M12号（606×410mm）</option><option>M15号（652×455mm）</option><option>M20号（727×500mm）</option>
-                <option>M25号（803×530mm）</option><option>M30号（910×606mm）</option><option>M40号（1000×652mm）</option>
-                <option>M50号（1167×727mm）</option>
-                </optgroup>
-                <optgroup label="ワイド">
-                <option>W-O（360×140mm）</option><option>W-SM（454×158mm）</option>
-                <option>W-3（546×222mm）</option><option>W-4（666×242mm）</option>
-                </optgroup>
-                <optgroup label="円">
-                <option>円（直径150mm）</option><option>円（直径200mm）</option>
-                <option>円（直径250mm）</option><option>円（直径300mm）</option>
-                </optgroup>
-                <option>その他</option>
-              </select>
-            </div>
-            <div class="form-row">
-              <label>価格</label>
-              <input type="text" id="fChArtworkPrice" class="artwork-price" placeholder="例: 55,000" />
-            </div>
-            <div class="form-row">
+            <div id="chArtworkLines" style="margin-bottom:4px"></div>
+            <button type="button" class="al-add-btn" onclick="_addArtworkLine('chArtworkLines')">＋ 作品を追加</button>
+            <div class="form-row" style="margin-top:10px">
               <label>額縁</label>
               <div class="frame-opts">
                 <label class="frame-opt"><input type="radio" name="fChFrame" value=""> 未選択</label>
@@ -2618,10 +2503,14 @@ function _projInfoHtml(proj) {
     const cl = (proj.clients || [])[0];
     if (!cl) return '';
     const lines = [];
-    if (cl.artworkName)  lines.push(row('作品名', cl.artworkName));
-    if (cl.artworkSize)  lines.push(row('サイズ', cl.artworkSize));
-    if (cl.artworkPrice) lines.push(row('価格', `¥${cl.artworkPrice}`));
-    if (cl.deliveryDate) lines.push(row('納期', fmtJp(cl.deliveryDate)));
+    const _piArts = cl.artworks || [];
+    _piArts.forEach((art, i) => {
+      const pfx = _piArts.length > 1 ? `作品${i+1} ` : '';
+      if (art.name)         lines.push(row(pfx + '作品名', art.name));
+      if (art.size)         lines.push(row(pfx + 'サイズ', art.size));
+      if (art.price)        lines.push(row(pfx + '価格', `¥${art.price}`));
+      if (art.deliveryDate) lines.push(row(pfx + '納期', fmtJp(art.deliveryDate)));
+    });
     return lines.join('');
   } else if (proj.projType === 'exhibition') {
     const info = proj.exhibitionInfo || {};
@@ -2638,10 +2527,12 @@ function _projDateChip(proj) {
   let dateStr = '', endIso = '';
   if (proj.projType === 'purchase') {
     const cl = (proj.clients || [])[0];
-    if (!cl || !cl.deliveryDate) return null;
-    const dt = parse(cl.deliveryDate);
+    if (!cl) return null;
+    const _dates = (cl.artworks || []).map(a => a.deliveryDate).filter(Boolean).sort();
+    if (!_dates.length) return null;
+    endIso = _dates[0];
+    const dt = parse(endIso);
     dateStr = `納期 ${dt.getMonth()+1}/${dt.getDate()}`;
-    endIso = cl.deliveryDate;
   } else if (proj.projType === 'exhibition') {
     const info = proj.exhibitionInfo || {};
     if (!info.startDate && !info.endDate) return null;
@@ -2953,19 +2844,29 @@ function makeClientCard(cl, actions) {
     cd.className = 'cl-contact-text'; cd.textContent = meta.join(' · ');
     info.appendChild(cd);
   }
-  const artParts = [
-    cl.orderType   ? ORDER_TYPE_LABEL[cl.orderType] : '',
-    cl.artworkName || '',
-    cl.artworkSize || '',
-    cl.artworkPrice ? `¥${cl.artworkPrice}` : '',
-    cl.frameNeeded  ? FRAME_LABEL[cl.frameNeeded] : '',
-    cl.deliveryDate ? `納期 ${fmtJp(cl.deliveryDate)}` : '',
-  ].filter(Boolean);
-  if (artParts.length) {
-    const at = document.createElement('div');
-    at.className = 'artwork-tag'; at.textContent = artParts.join(' · ');
-    info.appendChild(at);
+  const _arts = cl.artworks || [];
+  const _otLbl = cl.orderType ? ORDER_TYPE_LABEL[cl.orderType] : '';
+  const _frLbl = cl.frameNeeded ? FRAME_LABEL[cl.frameNeeded] : '';
+  const _headerParts = [_otLbl, _frLbl].filter(Boolean);
+  if (_headerParts.length) {
+    const ht = document.createElement('div');
+    ht.className = 'artwork-tag'; ht.textContent = _headerParts.join(' · ');
+    info.appendChild(ht);
   }
+  _arts.forEach((art, i) => {
+    const ap = [
+      _arts.length > 1 ? `[${i+1}]` : '',
+      art.name || '',
+      art.size || '',
+      art.price ? `¥${art.price}` : '',
+      art.deliveryDate ? `納期 ${fmtJp(art.deliveryDate)}` : '',
+    ].filter(Boolean);
+    if (ap.length) {
+      const at = document.createElement('div');
+      at.className = 'artwork-tag'; at.textContent = ap.join(' ');
+      info.appendChild(at);
+    }
+  });
   card.appendChild(av); card.appendChild(info);
   if (actions) card.appendChild(actions);
   return card;
@@ -3347,10 +3248,83 @@ function closePhotoLightbox() {
   document.getElementById('photoLightboxImg').src = '';
 }
 
+// ─── Multi-artwork line helpers ────────────────────────────────
+function _artworkSizeOpts(selected) {
+  const groups = [
+    ['F',['F6号（410×318mm）','F8号（455×380mm）','F10号（530×455mm）','F12号（606×500mm）','F15号（652×530mm）','F20号（727×606mm）','F25号（803×652mm）','F30号（910×727mm）','F40号（1000×803mm）','F50号（1167×910mm）']],
+    ['P',['P6号（410×273mm）','P8号（455×333mm）','P10号（530×410mm）','P12号（606×455mm）','P15号（652×500mm）','P20号（727×530mm）','P25号（803×606mm）','P30号（910×652mm）','P40号（1000×727mm）','P50号（1167×803mm）']],
+    ['M',['M6号（410×242mm）','M8号（455×273mm）','M10号（530×333mm）','M12号（606×410mm）','M15号（652×455mm）','M20号（727×500mm）','M25号（803×530mm）','M30号（910×606mm）','M40号（1000×652mm）','M50号（1167×727mm）']],
+    ['ワイド',['W-O（360×140mm）','W-SM（454×158mm）','W-3（546×222mm）','W-4（666×242mm）']],
+    ['円',['円（直径150mm）','円（直径200mm）','円（直径250mm）','円（直径300mm）']],
+  ];
+  let h = '<option value="">未選択</option>';
+  for (const [lbl, opts] of groups) {
+    h += `<optgroup label="${lbl}">`;
+    for (const o of opts) h += `<option${o === selected ? ' selected' : ''}>${o}</option>`;
+    h += '</optgroup>';
+  }
+  h += `<option${'その他' === selected ? ' selected' : ''}>その他</option>`;
+  return h;
+}
+
+function _artworkLineHtml(art, idx) {
+  const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+  return `<div class="artwork-line" data-alid="${esc(art.id||'')}">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+      <span style="font-size:11px;font-weight:700;color:#95a5a6">作品 ${idx+1}</span>
+      <button type="button" class="al-remove-btn" onclick="_removeArtworkLine(this)" title="この作品を削除">×</button>
+    </div>
+    <input type="text" class="al-name" placeholder="作品名" value="${esc(art.name)}" style="width:100%;padding:8px 10px;border:1.5px solid #dfe6e9;border-radius:7px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box;margin-bottom:6px" />
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">
+      <select class="al-size artwork-select" style="flex:1;min-width:140px">${_artworkSizeOpts(art.size)}</select>
+      <input type="text" class="al-price artwork-price" placeholder="価格 例: 55,000" value="${esc(art.price)}" style="flex:1;min-width:120px;padding:8px 10px;border:1.5px solid #dfe6e9;border-radius:7px;font-size:13px;font-family:inherit;outline:none" />
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:12px;color:#636e72;flex-shrink:0">納期</span>
+      <input type="date" class="al-delivery" value="${esc(art.deliveryDate)}" style="padding:8px 10px;border:1.5px solid #dfe6e9;border-radius:7px;font-size:13px;font-family:inherit;outline:none;flex:1" />
+    </div>
+  </div>`;
+}
+
+function _renderArtworkLines(containerId, artworks) {
+  const c = document.getElementById(containerId);
+  if (!c) return;
+  const arr = (artworks && artworks.length) ? artworks : [{id: uid(), name:'', size:'', price:'', deliveryDate:''}];
+  c.innerHTML = arr.map((a,i) => _artworkLineHtml(a,i)).join('');
+}
+
+function _addArtworkLine(containerId) {
+  const c = document.getElementById(containerId);
+  if (!c) return;
+  const idx = c.querySelectorAll('.artwork-line').length;
+  const wrap = document.createElement('div');
+  wrap.innerHTML = _artworkLineHtml({id: uid(), name:'', size:'', price:'', deliveryDate:''}, idx);
+  c.appendChild(wrap.firstElementChild);
+}
+
+function _removeArtworkLine(btn) {
+  const line = btn.closest('.artwork-line');
+  if (!line) return;
+  const c = line.parentElement;
+  if (!c || c.querySelectorAll('.artwork-line').length <= 1) { alert('作品は1点以上必要です'); return; }
+  line.remove();
+  c.querySelectorAll('.artwork-line').forEach((l,i) => { const s = l.querySelector('span'); if(s) s.textContent = `作品 ${i+1}`; });
+}
+
+function _collectArtworkLines(containerId) {
+  const c = document.getElementById(containerId);
+  if (!c) return [];
+  return Array.from(c.querySelectorAll('.artwork-line')).map(line => ({
+    id: line.dataset.alid || uid(),
+    name: (line.querySelector('.al-name')?.value || '').trim(),
+    size: line.querySelector('.al-size')?.value || '',
+    price: (line.querySelector('.al-price')?.value || '').trim(),
+    deliveryDate: line.querySelector('.al-delivery')?.value || '',
+  }));
+}
+
 function updatePurchArtworkVis() {
   const type = (document.querySelector('input[name="fPurchOrderType"]:checked') || {}).value || '';
-  document.getElementById('fPurchArtworkNameRow').style.display =
-    (type === 'existing' || type === 'semi') ? '' : 'none';
   document.getElementById('fPurchOrderDetailRow').style.display =
     (type === 'full') ? '' : 'none';
 }
@@ -3360,14 +3334,11 @@ function _loadPurchaseClientFields(cl) {
   document.getElementById('fPurchContact').value      = cl.contact      || '';
   document.getElementById('fPurchAge').value          = cl.age          || '';
   document.getElementById('fPurchConversation').value = cl.conversation || '';
-  document.getElementById('fPurchDelivery').value     = cl.deliveryDate || '';
   const gr = document.querySelector(`input[name="fPurchGender"][value="${cl.gender||''}"]`);
   if (gr) gr.checked = true;
   const otr = document.querySelector(`input[name="fPurchOrderType"][value="${cl.orderType||''}"]`);
   if (otr) otr.checked = true;
-  document.getElementById('fPurchArtworkName').value  = cl.artworkName  || '';
-  document.getElementById('fPurchArtworkSize').value  = cl.artworkSize  || '';
-  document.getElementById('fPurchArtworkPrice').value = cl.artworkPrice || '';
+  _renderArtworkLines('purchArtworkLines', cl.artworks || []);
   document.getElementById('fPurchOrderDetail').value  = cl.orderDetail  || '';
   const fr = document.querySelector(`input[name="fPurchFrame"][value="${cl.frameNeeded||''}"]`);
   if (fr) fr.checked = true;
@@ -3379,14 +3350,11 @@ function _clearPurchaseClientFields() {
   document.getElementById('fPurchContact').value      = '';
   document.getElementById('fPurchAge').value          = '';
   document.getElementById('fPurchConversation').value = '';
-  document.getElementById('fPurchDelivery').value     = '';
   const gr = document.querySelector('input[name="fPurchGender"][value=""]');
   if (gr) gr.checked = true;
   const otr = document.querySelector('input[name="fPurchOrderType"][value=""]');
   if (otr) otr.checked = true;
-  document.getElementById('fPurchArtworkName').value  = '';
-  document.getElementById('fPurchArtworkSize').value  = '';
-  document.getElementById('fPurchArtworkPrice').value = '';
+  _renderArtworkLines('purchArtworkLines', null);
   document.getElementById('fPurchOrderDetail').value  = '';
   const fr = document.querySelector('input[name="fPurchFrame"][value=""]');
   if (fr) fr.checked = true;
@@ -3407,13 +3375,9 @@ function _collectPurchaseClient(existingId) {
     gender:       gRadio  ? gRadio.value  : '',
     age:          document.getElementById('fPurchAge').value.trim(),
     conversation: document.getElementById('fPurchConversation').value.trim(),
-    deliveryDate: document.getElementById('fPurchDelivery').value || '',
     cardImage:    null,
     orderType,
-    artworkName:  (orderType === 'existing' || orderType === 'semi')
-                    ? document.getElementById('fPurchArtworkName').value.trim() : '',
-    artworkSize:  document.getElementById('fPurchArtworkSize').value,
-    artworkPrice: document.getElementById('fPurchArtworkPrice').value.trim(),
+    artworks:     _collectArtworkLines('purchArtworkLines'),
     frameNeeded:  frRadio ? frRadio.value : '',
     orderDetail:  orderType === 'full'
                     ? document.getElementById('fPurchOrderDetail').value.trim() : '',
@@ -3423,15 +3387,11 @@ function _collectPurchaseClient(existingId) {
 // ─── Artwork field visibility toggles ────────────────────────────
 function updateArtworkVis() {
   const type = (document.querySelector('input[name="fOrderType"]:checked') || {}).value || '';
-  document.getElementById('fArtworkNameRow').style.display =
-    (type === 'existing' || type === 'semi') ? '' : 'none';
   document.getElementById('fOrderDetailRow').style.display =
     (type === 'full') ? '' : 'none';
 }
 function updateChArtworkVis() {
   const type = (document.querySelector('input[name="fChOrderType"]:checked') || {}).value || '';
-  document.getElementById('fChArtworkNameRow').style.display =
-    (type === 'existing' || type === 'semi') ? '' : 'none';
   document.getElementById('fChOrderDetailRow').style.display =
     (type === 'full') ? '' : 'none';
 }
@@ -3525,19 +3485,27 @@ function _cpopClient(body, cl, periodLabel) {
     info.appendChild(sub);
   }
 
-  const artParts = [
-    cl.orderType   ? ORDER_TYPE_LABEL[cl.orderType] : '',
-    cl.artworkName || '',
-    cl.artworkSize || '',
-    cl.artworkPrice ? `¥${cl.artworkPrice}` : '',
-    cl.deliveryDate ? `納期 ${fmtJp(cl.deliveryDate)}` : '',
-  ].filter(Boolean);
-  if (artParts.length) {
-    const at = document.createElement('div');
-    at.className = 'cpop-artwork';
-    at.textContent = '🎨 ' + artParts.join(' · ');
-    info.appendChild(at);
+  const _cpArts = cl.artworks || [];
+  const _cpOtLbl = cl.orderType ? ORDER_TYPE_LABEL[cl.orderType] : '';
+  if (_cpOtLbl) {
+    const ot = document.createElement('div');
+    ot.className = 'cpop-artwork'; ot.textContent = _cpOtLbl;
+    info.appendChild(ot);
   }
+  _cpArts.forEach((art, i) => {
+    const ap = [
+      _cpArts.length > 1 ? `[${i+1}]` : '🎨',
+      art.name || '',
+      art.size || '',
+      art.price ? `¥${art.price}` : '',
+      art.deliveryDate ? `納期 ${fmtJp(art.deliveryDate)}` : '',
+    ].filter(Boolean);
+    if (ap.length) {
+      const at = document.createElement('div');
+      at.className = 'cpop-artwork'; at.textContent = ap.join(' ');
+      info.appendChild(at);
+    }
+  });
 
   row.appendChild(av);
   row.appendChild(info);
@@ -3631,9 +3599,7 @@ function showClientForm(editId) {
     // artwork fields
     const otr = document.querySelector(`input[name="fOrderType"][value="${cl.orderType||''}"]`);
     if (otr) otr.checked = true;
-    document.getElementById('fArtworkName').value  = cl.artworkName  || '';
-    document.getElementById('fArtworkSize').value  = cl.artworkSize  || '';
-    document.getElementById('fArtworkPrice').value = cl.artworkPrice || '';
+    _renderArtworkLines('artworkLines', cl.artworks || []);
     document.getElementById('fOrderDetail').value  = cl.orderDetail  || '';
     const fr = document.querySelector(`input[name="fFrame"][value="${cl.frameNeeded||''}"]`);
     if (fr) fr.checked = true;
@@ -3659,9 +3625,7 @@ function showClientForm(editId) {
     // artwork fields reset
     const oer = document.querySelector('input[name="fOrderType"][value=""]');
     if (oer) oer.checked = true;
-    document.getElementById('fArtworkName').value  = '';
-    document.getElementById('fArtworkSize').value  = '';
-    document.getElementById('fArtworkPrice').value = '';
+    _renderArtworkLines('artworkLines', null);
     document.getElementById('fOrderDetail').value  = '';
     const frer = document.querySelector('input[name="fFrame"][value=""]');
     if (frer) frer.checked = true;
@@ -3698,10 +3662,7 @@ function saveClientForm() {
     conversation: document.getElementById('fConversation').value.trim(),
     cardImage:    cardImageData || null,
     orderType,
-    artworkName:  (orderType === 'existing' || orderType === 'semi')
-                    ? document.getElementById('fArtworkName').value.trim() : '',
-    artworkSize:  document.getElementById('fArtworkSize').value,
-    artworkPrice: document.getElementById('fArtworkPrice').value.trim(),
+    artworks:     _collectArtworkLines('artworkLines'),
     frameNeeded:  frRadio ? frRadio.value : '',
     orderDetail:  orderType === 'full'
                     ? document.getElementById('fOrderDetail').value.trim() : '',
@@ -4684,11 +4645,16 @@ function _importBaseOrder(order) {
       contact:     order.customer_mail || '',
       email:       order.customer_mail || '',
       address:     `${order.customer_prefecture||''}${order.customer_address||''}`,
-      artworkName: artworkTitle,
-      artworkPrice: String(price),
       orderDate:   order.ordered_time?.slice(0,10) || '',
       orderType:   'existing',
-      baseOrderId: order.unique_key || ''
+      baseOrderId: order.unique_key || '',
+      artworks: [{
+        id: uid(),
+        name: artworkTitle,
+        size: '',
+        price: String(price),
+        deliveryDate: '',
+      }]
     }]
   };
   projects.unshift(newProj);
@@ -4792,12 +4758,16 @@ function _importArtworkAsCase(artworkId) {
       contact:      '',
       email:        '',
       address:      '',
-      artworkName:  a.name,
-      artworkSize:  a.size || '',
-      artworkPrice: a.price || '',
       orderDate:    '',
       orderType:    'existing',
-      artworkInventoryId: a.id
+      artworkInventoryId: a.id,
+      artworks: [{
+        id: uid(),
+        name: a.name,
+        size: a.size || '',
+        price: a.price || '',
+        deliveryDate: '',
+      }]
     }]
   };
   projects.unshift(newProj);
@@ -5255,21 +5225,25 @@ function getAllSales() {
     if (proj.projType !== 'purchase') continue;
     const cl = (proj.clients || [])[0];
     if (!cl) continue;
-    sales.push({
-      projId: proj.id, projName: proj.name,
-      projColor: proj.color, projArchived: !!proj.archived,
-      clientName: cl.name || '',
-      contact: cl.contact || '',
-      gender: cl.gender || '',
-      age: cl.age || '',
-      orderType: cl.orderType || '',
-      artworkName: cl.artworkName || '',
-      artworkSize: cl.artworkSize || '',
-      artworkPrice: cl.artworkPrice || '',
-      frameNeeded: cl.frameNeeded || '',
-      orderDetail: cl.orderDetail || '',
-      deliveryDate: cl.deliveryDate || '',
-    });
+    const artworks = cl.artworks || [];
+    if (!artworks.length) continue;
+    for (const art of artworks) {
+      sales.push({
+        projId: proj.id, projName: proj.name,
+        projColor: proj.color, projArchived: !!proj.archived,
+        clientName: cl.name || '',
+        contact: cl.contact || '',
+        gender: cl.gender || '',
+        age: cl.age || '',
+        orderType: cl.orderType || '',
+        artworkName: art.name || '',
+        artworkSize: art.size || '',
+        artworkPrice: art.price || '',
+        frameNeeded: cl.frameNeeded || '',
+        orderDetail: cl.orderDetail || '',
+        deliveryDate: art.deliveryDate || '',
+      });
+    }
   }
   return sales;
 }
@@ -5777,9 +5751,7 @@ function showChildClientForm(editId) {
     // artwork fields
     const otr = document.querySelector(`input[name="fChOrderType"][value="${cl.orderType||''}"]`);
     if (otr) otr.checked = true;
-    document.getElementById('fChArtworkName').value  = cl.artworkName  || '';
-    document.getElementById('fChArtworkSize').value  = cl.artworkSize  || '';
-    document.getElementById('fChArtworkPrice').value = cl.artworkPrice || '';
+    _renderArtworkLines('chArtworkLines', cl.artworks || []);
     document.getElementById('fChOrderDetail').value  = cl.orderDetail  || '';
     const fr = document.querySelector(`input[name="fChFrame"][value="${cl.frameNeeded||''}"]`);
     if (fr) fr.checked = true;
@@ -5805,9 +5777,7 @@ function showChildClientForm(editId) {
     // artwork fields reset
     const oer = document.querySelector('input[name="fChOrderType"][value=""]');
     if (oer) oer.checked = true;
-    document.getElementById('fChArtworkName').value  = '';
-    document.getElementById('fChArtworkSize').value  = '';
-    document.getElementById('fChArtworkPrice').value = '';
+    _renderArtworkLines('chArtworkLines', null);
     document.getElementById('fChOrderDetail').value  = '';
     const frer = document.querySelector('input[name="fChFrame"][value=""]');
     if (frer) frer.checked = true;
@@ -5843,10 +5813,7 @@ function saveChildClientForm() {
     conversation: document.getElementById('fChConversation').value.trim(),
     cardImage:    chCardImageData || null,
     orderType,
-    artworkName:  (orderType === 'existing' || orderType === 'semi')
-                    ? document.getElementById('fChArtworkName').value.trim() : '',
-    artworkSize:  document.getElementById('fChArtworkSize').value,
-    artworkPrice: document.getElementById('fChArtworkPrice').value.trim(),
+    artworks:     _collectArtworkLines('chArtworkLines'),
     frameNeeded:  frRadio ? frRadio.value : '',
     orderDetail:  orderType === 'full'
                     ? document.getElementById('fChOrderDetail').value.trim() : '',
@@ -5947,6 +5914,27 @@ function load() {
     const d = localStorage.getItem('schedule_v2');
     if (d) projects = JSON.parse(d);
   } catch(e) { projects = []; }
+}
+
+function _migrateClientArtworks() {
+  let changed = false;
+  function _migrateProj(p) {
+    (p.clients || []).forEach(cl => {
+      if (!cl.artworks) {
+        cl.artworks = [{
+          id: uid(),
+          name: cl.artworkName || '',
+          size: cl.artworkSize || '',
+          price: cl.artworkPrice || '',
+          deliveryDate: cl.deliveryDate || '',
+        }];
+        changed = true;
+      }
+    });
+    (p.children || []).forEach(_migrateProj);
+  }
+  projects.forEach(_migrateProj);
+  if (changed) save();
 }
 
 function migrate() {
@@ -6069,6 +6057,7 @@ function initResize() {
 // ================================================================
 migrate();
 load();
+_migrateClientArtworks();
 _loadArtworks();
 _initGmailClient();
 initScrollSync();
