@@ -537,6 +537,10 @@
     .row-child {
       height: 44px; border-bottom: 1px solid #f1f3f5; position: relative;
     }
+    .row-proj-sep {
+      height: 7px; background: #f0f2f5;
+      border-top: 1px solid #e0e4ea; border-bottom: 1px solid #e0e4ea;
+    }
     .row-archive-header {
       height: 36px; border-top: 2px solid #e8ecf0; border-bottom: 1px solid #e8ecf0;
       background: #fafbfc; position: relative;
@@ -2023,7 +2027,7 @@ const PALETTE = [
 ];
 const DAY_PX    = { day: 38, week: 15, month: 5 };
 const VIEW_DAYS = { day: 60, week: 182, month: 365 };
-const ROW_H     = { parent: 36, child: 44, subitem: 30, 'archive-header': 36 };
+const ROW_H     = { parent: 36, child: 44, subitem: 30, 'archive-header': 36, 'proj-sep': 7 };
 const ORDER_TYPE_LABEL  = { existing: '既存作品販売', semi: 'セミオーダー', full: 'フルオーダー' };
 const FRAME_LABEL       = { yes: '額縁あり', no: '額縁なし' };
 const PROJ_TYPE_LABEL   = { purchase: '作品購入', exhibition: '展示会', other: 'その他' };
@@ -2081,7 +2085,10 @@ function clientColor(name) {
 // ================================================================
 function getRowList() {
   const rows = [];
+  let firstProj = true;
   function pushProjRows(proj, isArchived) {
+    if (!firstProj) rows.push({ type: 'proj-sep' });
+    firstProj = false;
     rows.push({ type: 'parent', proj, isArchived: !!isArchived });
     if (proj.expanded !== false) {
       for (const child of proj.children) {
@@ -2287,6 +2294,14 @@ function renderRows(px, days, t) {
       return;
     }
 
+    if (row.type === 'proj-sep') {
+      const el = document.createElement('div');
+      el.className = 'row-proj-sep';
+      el.style.height = ROW_H['proj-sep'] + 'px';
+      area.appendChild(el);
+      return;
+    }
+
     const h  = ROW_H[row.type];
     const el = document.createElement('div');
     el.className = (row.type === 'parent' ? 'row-parent' : 'row-child')
@@ -2375,7 +2390,6 @@ function renderSidebar() {
   const rows = getRowList();
   if (rows.length === 0) return;
 
-  let firstParent = true;
   rows.forEach(row => {
     if (row.type === 'archive-header') {
       const div = document.createElement('div');
@@ -2386,15 +2400,16 @@ function renderSidebar() {
       return;
     }
 
+    if (row.type === 'proj-sep') {
+      const sep = document.createElement('div');
+      sep.className = 'sb-proj-sep';
+      body.appendChild(sep);
+      return;
+    }
+
     const { proj, child, isArchived } = row;
 
     if (row.type === 'parent') {
-      if (!firstParent) {
-        const sep = document.createElement('div');
-        sep.className = 'sb-proj-sep';
-        body.appendChild(sep);
-      }
-      firstParent = false;
       const pRow = document.createElement('div');
       pRow.className = 'sb-parent' + (isArchived ? ' is-archived' : '');
 
