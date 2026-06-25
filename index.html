@@ -4507,7 +4507,7 @@ function startBaseOAuth() {
   if (!clientId) { alert('Client IDを保存してください'); return; }
   const state = Math.random().toString(36).slice(2);
   localStorage.setItem('baseOAuthState', state);
-  const url = `https://api.thebase.in/1/oauth/authorize?response_type=code&client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(BASE_REDIRECT_URI)}&scope=${BASE_SCOPE}&state=${state}`;
+  const url = `https://api.thebase.in/1/oauth/authorize?response_type=code&client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(BASE_REDIRECT_URI)}&scope=${encodeURIComponent(BASE_SCOPE)}&state=${state}`;
   location.href = url;
 }
 
