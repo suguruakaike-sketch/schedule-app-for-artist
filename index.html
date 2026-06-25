@@ -2805,17 +2805,24 @@ function _syncArtworkChildren(proj) {
   if (arts.length <= 1) return;
   proj.children = proj.children || [];
 
-  // プロジェクト名と同名で _fromArtworkId なし・subItems空・clients空の重複中項目を削除
+  // プロジェクト名と同名の作品IDセットを構築
+  const sameNameArtIds = new Set(
+    arts.filter(a => a.name === proj.name).map(a => a.id)
+  );
+  // 同名作品から生成された中項目（subItems・clients が空のもの）と手動同名中項目を削除
   proj.children = proj.children.filter(c => {
-    if (c._fromArtworkId) return true;
-    const isDuplicate = c.name === proj.name
-      && !(c.subItems && c.subItems.length)
-      && !(c.clients && c.clients.length);
-    return !isDuplicate;
+    if (c._fromArtworkId && sameNameArtIds.has(c._fromArtworkId)
+        && !(c.subItems && c.subItems.length)
+        && !(c.clients && c.clients.length)) return false;
+    if (!c._fromArtworkId && c.name === proj.name
+        && !(c.subItems && c.subItems.length)
+        && !(c.clients && c.clients.length)) return false;
+    return true;
   });
 
   arts.forEach(art => {
     if (!art.name) return;
+    if (art.name === proj.name) return; // プロジェクト名と同名の作品は中項目を作らない
     const exists = proj.children.find(c => c._fromArtworkId === art.id);
     if (exists) {
       exists.name = art.name;
