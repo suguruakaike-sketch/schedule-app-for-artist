@@ -5526,7 +5526,7 @@ function _updateSalesTargetBar() {
   const labelEl = document.getElementById('salesTargetLabel');
   const inputEl = document.getElementById('salesTargetInput');
   if (!wrap || !bar || !text) return;
-  if (!monthlyTarget || salesTabActive === 'gender' || salesTabActive === 'age') {
+  if (!monthlyTarget || !['monthly','yearly'].includes(salesTabActive)) {
     wrap.style.display = 'none';
     if (labelEl) labelEl.style.display = 'none';
     if (inputEl) inputEl.style.display = 'none';
