@@ -1936,7 +1936,7 @@
     <div class="sales-summary-bar">
       <div><span class="sales-total" id="salesTotalAmt"></span><span class="sales-sub" id="salesTotalSub"></span></div>
       <div class="sales-target-row">
-        <span class="sales-target-label">月目標</span>
+        <span class="sales-target-label" id="salesTargetLabel">月目標</span>
         <input type="number" class="sales-target-input" id="salesTargetInput"
                placeholder="例: 300000" oninput="_onSalesTargetInput()" />
         <div class="sales-target-pct-wrap" id="salesTargetPctWrap" style="display:none">
@@ -5519,28 +5519,43 @@ function _onSalesTargetInput() {
 }
 
 function _updateSalesTargetBar() {
-  const target = parseInt(localStorage.getItem('salesMonthlyTarget') || '0', 10);
-  const wrap   = document.getElementById('salesTargetPctWrap');
-  const bar    = document.getElementById('salesTargetPctBar');
-  const text   = document.getElementById('salesTargetPctText');
+  const monthlyTarget = parseInt(localStorage.getItem('salesMonthlyTarget') || '0', 10);
+  const wrap    = document.getElementById('salesTargetPctWrap');
+  const bar     = document.getElementById('salesTargetPctBar');
+  const text    = document.getElementById('salesTargetPctText');
+  const labelEl = document.getElementById('salesTargetLabel');
   if (!wrap || !bar || !text) return;
-  if (!target) { wrap.style.display = 'none'; return; }
+  if (!monthlyTarget) { wrap.style.display = 'none'; return; }
 
-  // 今月の売上を集計
-  const now = new Date();
-  const thisYM = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const now   = new Date();
   const sales = getAllSales();
-  const thisMonthTotal = sales.reduce((s, e) => {
-    if (!e.deliveryDate) return s;
-    const ym = e.deliveryDate.slice(0, 7);
-    return ym === thisYM ? s + _parsePrice(e.artworkPrice) : s;
-  }, 0);
+  let currentTotal, target, prefix;
 
-  const pct = Math.min(Math.round(thisMonthTotal / target * 100), 999);
+  if (salesTabActive === 'yearly') {
+    const thisYear = String(now.getFullYear());
+    currentTotal = sales.reduce((s, e) => {
+      if (!e.deliveryDate) return s;
+      return e.deliveryDate.startsWith(thisYear) ? s + _parsePrice(e.artworkPrice) : s;
+    }, 0);
+    target = monthlyTarget * 12;
+    prefix = '今年';
+    if (labelEl) labelEl.textContent = '年目標';
+  } else {
+    const thisYM = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    currentTotal = sales.reduce((s, e) => {
+      if (!e.deliveryDate) return s;
+      return e.deliveryDate.slice(0,7) === thisYM ? s + _parsePrice(e.artworkPrice) : s;
+    }, 0);
+    target = monthlyTarget;
+    prefix = '今月';
+    if (labelEl) labelEl.textContent = '月目標';
+  }
+
+  const pct  = Math.min(Math.round(currentTotal / target * 100), 999);
   const barW = Math.min(pct, 100);
   bar.style.width = barW + '%';
   bar.style.background = pct >= 100 ? 'rgba(0,184,148,0.7)' : 'rgba(255,255,255,0.6)';
-  text.textContent = `今月 ${pct}%（${_fmtPrice(thisMonthTotal)} / ${_fmtPrice(target)}）`;
+  text.textContent = `${prefix} ${pct}%（${_fmtPrice(currentTotal)} / ${_fmtPrice(target)}）`;
   wrap.style.display = 'block';
 }
 function closeSales() {
