@@ -2554,6 +2554,20 @@ function renderSidebar() {
           ? `${ss.getMonth()+1}/${ss.getDate()}`
           : `${ss.getMonth()+1}/${ss.getDate()}〜${se.getMonth()+1}/${se.getDate()}`;
         sRow.appendChild(ds);
+
+        const t2 = today();
+        const badge = document.createElement('span');
+        badge.className = 'status-badge';
+        if (t2 < ss) {
+          badge.textContent = `あと${diffD(t2,ss)}日`; badge.classList.add('s-future');
+        } else if (t2 <= se) {
+          const d = diffD(t2, se);
+          badge.textContent = d === 0 ? '本日' : `残り${d}日`;
+          badge.classList.add(d === 0 ? 's-today' : 's-ongoing');
+        } else {
+          badge.textContent = '終了'; badge.classList.add('s-past');
+        }
+        sRow.appendChild(badge);
       }
       if (!isArchived) {
         const delBtn = document.createElement('button');
