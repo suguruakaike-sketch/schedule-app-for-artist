@@ -1759,8 +1759,8 @@
       <!-- Tab: 基本情報 -->
       <div id="tabChBasic" class="tab-content active">
         <div class="form-row">
-          <label>中項目名（任意）</label>
-          <input type="text" id="fChildName" placeholder="空欄の場合は案件名を表示" />
+          <label>項目名</label>
+          <input type="text" id="fChildName" placeholder="項目名を入力" />
         </div>
         <div class="form-row">
           <div class="date-pair">
@@ -2656,8 +2656,8 @@ function openModal(mode, pid, cid) {
   const isChild  = mode === 'new-child'  || mode === 'edit-child';
 
   document.getElementById('secParent').style.display  = isParent ? '' : 'none';
-  document.getElementById('secChild').style.display   = (mode !== 'edit-parent') ? '' : 'none';
-  document.getElementById('secDivider').style.display = (mode === 'new-parent') ? '' : 'none';
+  document.getElementById('secChild').style.display   = isChild ? '' : 'none';
+  document.getElementById('secDivider').style.display = 'none';
   document.getElementById('parentCtx').style.display  = isChild  ? '' : 'none';
   document.getElementById('delBtn').style.display     = (mode === 'edit-parent' || mode === 'edit-child') ? '' : 'none';
 
@@ -2959,16 +2959,6 @@ function saveModal() {
       archived: false, expanded: true, children: []
     };
 
-    const start = document.getElementById('fStart').value;
-    const end   = document.getElementById('fEnd').value;
-    if (start && end) {
-      if (start > end) { alert('終了日は開始日以降にしてください'); return; }
-      proj.children.push({
-        id: uid(), name: document.getElementById('fChildName').value.trim(),
-        start, end, notes: document.getElementById('fChildNotes').value.trim(),
-        clients: [], subItems: []
-      });
-    }
     projects.push(proj);
     _syncArtworkChildren(proj);
   }
