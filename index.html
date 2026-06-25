@@ -936,11 +936,40 @@
     .sales-tab-btn:hover { color: #2d3436; }
     .sales-tab-btn.active { color: #e17055; border-bottom-color: #e17055; }
     .sales-summary-bar {
-      padding: 10px 18px; background: linear-gradient(135deg, #e17055 0%, #d63031 100%);
+      padding: 10px 18px 12px; background: linear-gradient(135deg, #e17055 0%, #d63031 100%);
       flex-shrink: 0;
     }
     .sales-total { font-size: 20px; font-weight: 800; color: white; }
     .sales-sub { font-size: 12px; color: rgba(255,255,255,0.75); margin-left: 6px; }
+    .sales-target-row {
+      display: flex; align-items: center; gap: 8px; margin-top: 8px;
+    }
+    .sales-target-label { font-size: 11px; color: rgba(255,255,255,0.8); white-space: nowrap; }
+    .sales-target-input {
+      width: 100px; padding: 3px 8px; border: 1px solid rgba(255,255,255,0.5);
+      border-radius: 5px; background: rgba(255,255,255,0.2); color: white;
+      font-size: 12px; font-family: inherit; outline: none;
+    }
+    .sales-target-input::placeholder { color: rgba(255,255,255,0.5); }
+    .sales-target-input:focus { border-color: white; background: rgba(255,255,255,0.3); }
+    .sales-target-pct-wrap {
+      flex: 1; background: rgba(255,255,255,0.2); border-radius: 5px;
+      height: 18px; overflow: hidden; position: relative;
+    }
+    .sales-target-pct-bar {
+      height: 100%; border-radius: 5px;
+      background: rgba(255,255,255,0.6); transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+    }
+    .sales-target-pct-text {
+      position: absolute; inset: 0; display: flex; align-items: center;
+      justify-content: center; font-size: 11px; font-weight: 700; color: white;
+    }
+    .sg-target-badge {
+      font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 10px;
+      flex-shrink: 0;
+    }
+    .sg-target-badge.over  { background: #00b89422; color: #00b894; }
+    .sg-target-badge.under { background: #e1705522; color: #e17055; }
     .sales-body { flex: 1; overflow-y: auto; }
     .sales-empty {
       text-align: center; padding: 48px 20px; color: #95a5a6; font-size: 14px; line-height: 1.7;
@@ -977,19 +1006,22 @@
     .sales-group {
       padding: 14px 18px; border-bottom: 1px solid #f1f3f5;
     }
-    .sg-header {
-      display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;
+    .sg-row {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
     }
+    .sg-rank { font-size: 11px; font-weight: 700; color: #b2bec3; width: 16px; flex-shrink: 0; text-align: right; }
+    .sg-main { flex: 1; min-width: 0; }
+    .sg-top { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 5px; }
     .sg-label { font-size: 13px; font-weight: 700; color: #2d3436; }
-    .sg-stats { display: flex; gap: 10px; align-items: center; }
+    .sg-right { display: flex; align-items: baseline; gap: 6px; flex-shrink: 0; }
+    .sg-total { font-size: 15px; font-weight: 800; color: #e17055; }
     .sg-count { font-size: 11px; color: #95a5a6; }
-    .sg-total { font-size: 14px; font-weight: 700; color: #e17055; }
-    .sg-bar-wrap {
-      background: #f1f3f5; border-radius: 4px; height: 6px; margin-bottom: 8px; overflow: hidden;
+    .sg-bar-track {
+      background: #f1f3f5; border-radius: 6px; height: 10px; overflow: hidden;
     }
-    .sg-bar { background: linear-gradient(90deg, #e17055, #d63031); height: 100%; border-radius: 4px; min-width: 2px; transition: width 0.3s; }
-    .sg-pct { font-size: 11px; color: #95a5a6; }
-    .sg-items { display: flex; flex-direction: column; gap: 4px; }
+    .sg-bar { background: linear-gradient(90deg, #fab1a0, #e17055); height: 100%; border-radius: 6px; transition: width 0.4s cubic-bezier(0.4,0,0.2,1); }
+    .sg-pct { font-size: 10px; color: #b2bec3; margin-top: 3px; text-align: right; }
+    .sg-items { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; padding-left: 26px; }
     .sg-item {
       display: flex; align-items: center; gap: 8px; padding: 5px 8px;
       background: #f8f9fa; border-radius: 6px; font-size: 12px;
@@ -1982,7 +2014,16 @@
       </div>
     </div>
     <div class="sales-summary-bar">
-      <span class="sales-total" id="salesTotalAmt"></span><span class="sales-sub" id="salesTotalSub"></span>
+      <div><span class="sales-total" id="salesTotalAmt"></span><span class="sales-sub" id="salesTotalSub"></span></div>
+      <div class="sales-target-row">
+        <span class="sales-target-label">月目標</span>
+        <input type="number" class="sales-target-input" id="salesTargetInput"
+               placeholder="例: 300000" oninput="_onSalesTargetInput()" />
+        <div class="sales-target-pct-wrap" id="salesTargetPctWrap" style="display:none">
+          <div class="sales-target-pct-bar" id="salesTargetPctBar"></div>
+          <div class="sales-target-pct-text" id="salesTargetPctText"></div>
+        </div>
+      </div>
     </div>
     <div id="salesBody" class="sales-body"></div>
   </div>
@@ -5249,7 +5290,44 @@ function openSales() {
   document.getElementById('salesOverlay').classList.add('open');
   salesTabActive = 'list';
   _updateSalesTabUI();
+  // 保存済み目標を復元
+  const savedTarget = localStorage.getItem('salesMonthlyTarget') || '';
+  const inp = document.getElementById('salesTargetInput');
+  if (inp) inp.value = savedTarget;
   renderSales();
+}
+
+function _onSalesTargetInput() {
+  const val = (document.getElementById('salesTargetInput')?.value || '').trim();
+  if (val) localStorage.setItem('salesMonthlyTarget', val);
+  else localStorage.removeItem('salesMonthlyTarget');
+  _updateSalesTargetBar();
+}
+
+function _updateSalesTargetBar() {
+  const target = parseInt(localStorage.getItem('salesMonthlyTarget') || '0', 10);
+  const wrap   = document.getElementById('salesTargetPctWrap');
+  const bar    = document.getElementById('salesTargetPctBar');
+  const text   = document.getElementById('salesTargetPctText');
+  if (!wrap || !bar || !text) return;
+  if (!target) { wrap.style.display = 'none'; return; }
+
+  // 今月の売上を集計
+  const now = new Date();
+  const thisYM = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const sales = getAllSales();
+  const thisMonthTotal = sales.reduce((s, e) => {
+    if (!e.deliveryDate) return s;
+    const ym = e.deliveryDate.slice(0, 7);
+    return ym === thisYM ? s + _parsePrice(e.artworkPrice) : s;
+  }, 0);
+
+  const pct = Math.min(Math.round(thisMonthTotal / target * 100), 999);
+  const barW = Math.min(pct, 100);
+  bar.style.width = barW + '%';
+  bar.style.background = pct >= 100 ? 'rgba(0,184,148,0.7)' : 'rgba(255,255,255,0.6)';
+  text.textContent = `今月 ${pct}%（${_fmtPrice(thisMonthTotal)} / ${_fmtPrice(target)}）`;
+  wrap.style.display = 'block';
 }
 function closeSales() {
   document.getElementById('salesOverlay').classList.remove('open');
@@ -5273,6 +5351,7 @@ function renderSales() {
   const total = sales.reduce((s, e) => s + _parsePrice(e.artworkPrice), 0);
   document.getElementById('salesTotalAmt').textContent = _fmtPrice(total);
   document.getElementById('salesTotalSub').textContent = ` · ${sales.length}件`;
+  _updateSalesTargetBar();
   const body = document.getElementById('salesBody');
   body.innerHTML = '';
   if      (salesTabActive === 'list')    _renderSalesList(body, sales);
@@ -5351,17 +5430,30 @@ function _renderSalesGrouped(body, sales, mode) {
     return;
   }
   const maxTotal = Math.max(...keys.filter(k => k !== '__none__').map(k => groups[k].total), 0);
-  keys.forEach(key => {
+  const _mt = parseInt(localStorage.getItem('salesMonthlyTarget') || '0', 10);
+  const monthlyTarget = mode === 'monthly' ? _mt : (mode === 'yearly' ? _mt * 12 : 0);
+  keys.forEach((key, i) => {
     const g = groups[key];
     const barW = maxTotal > 0 ? Math.round((g.total / maxTotal) * 100) : 0;
+    let targetBadge = '';
+    if (monthlyTarget && key !== '__none__') {
+      const achPct = Math.round(g.total / monthlyTarget * 100);
+      const cls = achPct >= 100 ? 'over' : 'under';
+      targetBadge = `<span class="sg-target-badge ${cls}">目標${achPct}%</span>`;
+    }
     const sect = document.createElement('div');
     sect.className = 'sales-group';
     sect.innerHTML = `
-      <div class="sg-header">
-        <div class="sg-label">${g.label}</div>
-        <div class="sg-stats"><span class="sg-count">${g.items.length}件</span><span class="sg-total">${_fmtPrice(g.total)}</span></div>
+      <div class="sg-row">
+        <div class="sg-rank">${key !== '__none__' ? i + 1 : ''}</div>
+        <div class="sg-main">
+          <div class="sg-top">
+            <span class="sg-label">${g.label}</span>
+            <div class="sg-right">${targetBadge}<span class="sg-total">${_fmtPrice(g.total)}</span><span class="sg-count">${g.items.length}件</span></div>
+          </div>
+          <div class="sg-bar-track"><div class="sg-bar" style="width:${barW}%"></div></div>
+        </div>
       </div>
-      <div class="sg-bar-wrap"><div class="sg-bar" style="width:${barW}%"></div></div>
       <div class="sg-items">${g.items.map(s => `
         <div class="sg-item">
           <span class="sg-item-name">${s.clientName || '（名前なし）'}</span>
@@ -5389,19 +5481,23 @@ function _renderSalesGender(body, sales) {
     return;
   }
   const maxTotal = Math.max(...keys.map(k => groups[k].total), 0);
-  keys.forEach(key => {
+  keys.forEach((key, i) => {
     const g = groups[key];
     const barW = maxTotal > 0 ? Math.round((g.total / maxTotal) * 100) : 0;
     const pct  = allTotal > 0 ? Math.round(g.total / allTotal * 100) : 0;
     const sect = document.createElement('div');
     sect.className = 'sales-group';
     sect.innerHTML = `
-      <div class="sg-header">
-        <div class="sg-label">${g.label}</div>
-        <div class="sg-stats"><span class="sg-count">${g.items.length}件</span><span class="sg-total">${_fmtPrice(g.total)}</span></div>
-      </div>
-      <div class="sg-bar-wrap"><div class="sg-bar" style="width:${barW}%"></div></div>
-      <div class="sg-pct">売り上げ比: ${pct}%</div>`;
+      <div class="sg-row">
+        <div class="sg-rank">${i + 1}</div>
+        <div class="sg-main">
+          <div class="sg-top">
+            <span class="sg-label">${g.label}</span>
+            <div class="sg-right"><span class="sg-total">${_fmtPrice(g.total)}</span><span class="sg-count">${g.items.length}件 · ${pct}%</span></div>
+          </div>
+          <div class="sg-bar-track"><div class="sg-bar" style="width:${barW}%"></div></div>
+        </div>
+      </div>`;
     body.appendChild(sect);
   });
 }
@@ -5440,19 +5536,23 @@ function _renderSalesAge(body, sales) {
     return;
   }
   const maxTotal = Math.max(...activeGroups.map(ag => groups[ag.key].total), 0);
-  activeGroups.forEach(ag => {
+  activeGroups.forEach((ag, i) => {
     const g = groups[ag.key];
     const barW = maxTotal > 0 ? Math.round((g.total / maxTotal) * 100) : 0;
     const pct  = allTotal > 0 ? Math.round(g.total / allTotal * 100) : 0;
     const sect = document.createElement('div');
     sect.className = 'sales-group';
     sect.innerHTML = `
-      <div class="sg-header">
-        <div class="sg-label">${g.label}</div>
-        <div class="sg-stats"><span class="sg-count">${g.items.length}件</span><span class="sg-total">${_fmtPrice(g.total)}</span></div>
-      </div>
-      <div class="sg-bar-wrap"><div class="sg-bar" style="width:${barW}%"></div></div>
-      <div class="sg-pct">売り上げ比: ${pct}%</div>`;
+      <div class="sg-row">
+        <div class="sg-rank">${i + 1}</div>
+        <div class="sg-main">
+          <div class="sg-top">
+            <span class="sg-label">${g.label}</span>
+            <div class="sg-right"><span class="sg-total">${_fmtPrice(g.total)}</span><span class="sg-count">${g.items.length}件 · ${pct}%</span></div>
+          </div>
+          <div class="sg-bar-track"><div class="sg-bar" style="width:${barW}%"></div></div>
+        </div>
+      </div>`;
     body.appendChild(sect);
   });
 }
