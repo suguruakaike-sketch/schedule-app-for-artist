@@ -1328,8 +1328,8 @@
     <!-- Section A: Parent fields (2 tabs) -->
     <div id="secParent">
       <div class="modal-tabs" id="parentTabs">
-        <button class="tab-btn active" onclick="switchTab('basic')">基本情報</button>
-        <button class="tab-btn"        onclick="switchTab('client')">クライアント</button>
+        <button type="button" class="tab-btn active" onclick="switchTab('basic')">基本情報</button>
+        <button type="button" class="tab-btn"        onclick="switchTab('client')">クライアント</button>
       </div>
 
       <!-- Tab: 基本情報 -->
@@ -1573,12 +1573,12 @@
           <label>Anthropic APIキー <span style="font-weight:400;font-size:11px;color:#888">（Claude使用時）</span></label>
           <div class="api-key-row">
             <input type="password" id="fApiKeyBasic" placeholder="sk-ant-..." />
-            <button class="btn-save-key" id="saveKeyBtnBasic" onclick="saveApiKeyBasic()">保存</button>
+            <button type="button" class="btn-save-key" id="saveKeyBtnBasic" onclick="saveApiKeyBasic()">保存</button>
           </div>
           <label style="margin-top:10px;display:block">OpenAI APIキー <span style="font-weight:400;font-size:11px;color:#888">（ChatGPT使用時）</span></label>
           <div class="api-key-row">
             <input type="password" id="fOpenAIKeyBasic" placeholder="sk-..." />
-            <button class="btn-save-key" id="saveOpenAIKeyBtnBasic" onclick="saveOpenAIKeyBasic()">保存</button>
+            <button type="button" class="btn-save-key" id="saveOpenAIKeyBtnBasic" onclick="saveOpenAIKeyBasic()">保存</button>
           </div>
           <div class="api-key-hint">どちらか一方を設定すればAI機能が使えます。両方ある場合はAnthropicを優先します。</div>
         </div>
@@ -1591,7 +1591,7 @@
           </div>
           <div class="api-key-row" style="margin-top:4px">
             <input type="password" id="fBaseClientSecret" placeholder="Client Secret" style="flex:1" />
-            <button class="btn-save-key" id="saveBaseKeyBtn" onclick="saveBaseCredentials()">保存</button>
+            <button type="button" class="btn-save-key" id="saveBaseKeyBtn" onclick="saveBaseCredentials()">保存</button>
           </div>
           <div style="margin-top:8px" id="baseConnectArea">
             <button class="ep-btn primary ep-btn-sm" id="baseAuthBtn" onclick="startBaseOAuth()" style="display:none">Baseと連携する</button>
@@ -1748,12 +1748,12 @@
           <label>Anthropic APIキー <span style="font-weight:400;font-size:11px;color:#888">（Claude使用時）</span></label>
           <div class="api-key-row">
             <input type="password" id="fApiKey" placeholder="sk-ant-..." />
-            <button class="btn-save-key" id="saveKeyBtn" onclick="saveApiKey()">保存</button>
+            <button type="button" class="btn-save-key" id="saveKeyBtn" onclick="saveApiKey()">保存</button>
           </div>
           <label style="margin-top:10px;display:block">OpenAI APIキー <span style="font-weight:400;font-size:11px;color:#888">（ChatGPT使用時）</span></label>
           <div class="api-key-row">
             <input type="password" id="fOpenAIKey" placeholder="sk-..." />
-            <button class="btn-save-key" id="saveOpenAIKeyBtn" onclick="saveOpenAIKey()">保存</button>
+            <button type="button" class="btn-save-key" id="saveOpenAIKeyBtn" onclick="saveOpenAIKey()">保存</button>
           </div>
           <div class="api-key-hint">名刺の自動読み取り・メール返信案の作成に使用します。どちらか一方でOK。</div>
         </div>
@@ -1768,8 +1768,8 @@
     <div id="secChild" style="display:none">
       <!-- Tabs (hidden in new-parent mode) -->
       <div class="modal-tabs" id="childTabs" style="display:none">
-        <button class="tab-btn active" onclick="switchChildTab('basic')">基本情報</button>
-        <button class="tab-btn"        onclick="switchChildTab('client')">クライアント</button>
+        <button type="button" class="tab-btn active" onclick="switchChildTab('basic')">基本情報</button>
+        <button type="button" class="tab-btn"        onclick="switchChildTab('client')">クライアント</button>
       </div>
 
       <!-- Tab: 基本情報 -->
@@ -1929,7 +1929,7 @@
           <label>Anthropic APIキー</label>
           <div class="api-key-row">
             <input type="password" id="fChApiKey" placeholder="sk-ant-..." />
-            <button class="btn-save-key" id="chSaveKeyBtn" onclick="saveChApiKey()">保存</button>
+            <button type="button" class="btn-save-key" id="chSaveKeyBtn" onclick="saveChApiKey()">保存</button>
           </div>
           <div class="api-key-hint">名刺の自動読み取りに使用します。このブラウザにのみ保存されます。</div>
         </div>
@@ -1937,10 +1937,10 @@
     </div>
 
     <div class="modal-footer">
-      <button class="btn-del"     id="delBtn"     style="display:none" onclick="deleteFromModal()">削除</button>
-      <button class="btn-archive" id="archiveBtn" style="display:none" onclick="archiveFromModal()">アーカイブ</button>
-      <button class="btn-cancel"  onclick="closeModal()">キャンセル</button>
-      <button class="btn-save"    onclick="saveModal()">保存</button>
+      <button type="button" class="btn-del"     id="delBtn"     style="display:none" onclick="deleteFromModal()">削除</button>
+      <button type="button" class="btn-archive" id="archiveBtn" style="display:none" onclick="archiveFromModal()">アーカイブ</button>
+      <button type="button" class="btn-cancel"  onclick="closeModal()">キャンセル</button>
+      <button type="button" class="btn-save"    onclick="saveModal()">保存</button>
     </div>
   </div>
 </div>
@@ -2011,8 +2011,8 @@
         <button class="artwork-close" onclick="closeArtwork()">×</button>
       </div>
       <div class="artwork-header-btns">
-        <button class="artwork-header-btn" onclick="openArtworkImport()">📥 Baseからインポート</button>
-        <button class="artwork-header-btn primary" onclick="openArtworkForm(null)">＋ 作品を追加</button>
+        <button type="button" class="artwork-header-btn" onclick="openArtworkImport()">📥 Baseからインポート</button>
+        <button type="button" class="artwork-header-btn primary" onclick="openArtworkForm(null)">＋ 作品を追加</button>
       </div>
     </div>
     <div class="artwork-tabs" id="artworkTabBar">
@@ -4863,7 +4863,7 @@ function openArtworkForm(id) {
     `<option value="${s}" ${(!a && s==='available') || (a && a.soldStatus===s) ? 'selected' : ''}>${{available:'在庫あり',sold:'販売済み',reserved:'予約済み'}[s]}</option>`).join('');
   body.innerHTML = `
     <div class="artwork-form">
-      <button class="artwork-form-back" onclick="renderArtworkList()">← 戻る</button>
+      <button type="button" class="artwork-form-back" onclick="renderArtworkList()">← 戻る</button>
       <div class="artwork-form-photo-section">
         <div style="font-size:11px;font-weight:700;color:#95a5a6;margin-bottom:6px">作品写真</div>
         <div class="artwork-photo-area">
@@ -4910,9 +4910,9 @@ function openArtworkForm(id) {
       </div>
       <div class="form-row"><label>メモ</label><textarea id="fArtNotes" style="min-height:60px">${a?.notes||''}</textarea></div>
       <div class="artwork-form-btns">
-        ${a ? `<button class="artwork-form-delete" onclick="deleteArtwork('${a.id}')">削除</button>` : ''}
-        <button class="artwork-form-cancel" onclick="renderArtworkList()">キャンセル</button>
-        <button class="artwork-form-save" onclick="saveArtworkForm()">保存</button>
+        ${a ? `<button type="button" class="artwork-form-delete" onclick="deleteArtwork('${a.id}')">削除</button>` : ''}
+        <button type="button" class="artwork-form-cancel" onclick="renderArtworkList()">キャンセル</button>
+        <button type="button" class="artwork-form-save" onclick="saveArtworkForm()">保存</button>
       </div>
     </div>`;
 }
@@ -4979,7 +4979,7 @@ function openArtworkImport() {
 
   const baseSection = (hasToken && hasClientId)
     ? `<div style="margin-bottom:4px">
-        <button class="ep-btn primary" style="width:100%;padding:12px;font-size:14px" onclick="_loadBaseItemsForImport()">
+        <button type="button" class="ep-btn primary" style="width:100%;padding:12px;font-size:14px" onclick="_loadBaseItemsForImport()">
           🛍 Base商品を読み込む
         </button>
        </div>
@@ -4995,14 +4995,14 @@ function openArtworkImport() {
             style="border:1px solid #dfe6e9;border-radius:6px;padding:8px 10px;font-size:13px;width:100%;box-sizing:border-box">
           <input id="inlineBaseClientSecret" type="password" placeholder="Client Secret" value="${_escHtml(savedSecret)}"
             style="border:1px solid #dfe6e9;border-radius:6px;padding:8px 10px;font-size:13px;width:100%;box-sizing:border-box">
-          <button class="ep-btn primary" style="padding:10px" onclick="_inlineSaveAndConnectBase()">保存してBaseと連携する →</button>
+          <button type="button" class="ep-btn primary" style="padding:10px" onclick="_inlineSaveAndConnectBase()">保存してBaseと連携する →</button>
         </div>
        </div>
        <div id="baseItemImportArea"></div>`;
 
   body.innerHTML = `
     <div class="csv-import-area">
-      <button class="artwork-form-back" onclick="renderArtworkList()">← 戻る</button>
+      <button type="button" class="artwork-form-back" onclick="renderArtworkList()">← 戻る</button>
       ${baseSection}
       <div style="margin:16px 0;border-top:1px solid #e8ecf0;padding-top:14px">
         <div style="font-size:12px;color:#95a5a6;margin-bottom:8px">または CSVファイルから取り込む</div>
